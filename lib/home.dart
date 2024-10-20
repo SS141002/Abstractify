@@ -11,13 +11,18 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.purple),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Abstractify"),
+        leading: IconButton(
+          onPressed: () {},
+          icon: const Icon(Icons.menu),
+        ),
       ),
-      home: Scaffold(
-        body: Container(
+      body: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        /*
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -28,7 +33,75 @@ class _HomeState extends State<Home> {
               end: Alignment.bottomRight,
             ),
           ),
-          child: Summary(),
+          */
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  /*side: const BorderSide(color: Colors.white),*/
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => const Summary(),
+                  ),
+                );
+              },
+              child: const SizedBox(
+                width: 150,
+                height: 150,
+                child: Center(
+                  child: Text(
+                    "Summarizer",
+                    style: TextStyle(fontSize: 20),
+                  ),
+                ),
+              ),
+            ),
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  /*side: const BorderSide(color: Colors.white),*/
+                ),
+              ),
+              onPressed: () {},
+              child: const SizedBox(
+                width: 150,
+                height: 150,
+                child: Center(
+                  child: Text(
+                    "Grammar Checker",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 20),
+                  ),
+                ),
+              ),
+            ),
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  /*side: const BorderSide(color: Colors.white),*/
+                ),
+              ),
+              onPressed: () {},
+              child: const SizedBox(
+                width: 150,
+                height: 150,
+                child: Center(
+                  child: Text(
+                    "OCR",
+                    style: TextStyle(fontSize: 20),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
