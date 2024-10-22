@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
 import 'dart:convert';
 
 class Summary extends StatefulWidget {
@@ -21,6 +20,7 @@ class _SummaryState extends State<Summary> {
   int? minLength;
   int? maxLength;
   String? text;
+  int port = 5000;
 
   bool minLengthValid = true;
   bool maxLengthValid = true;
@@ -37,7 +37,7 @@ class _SummaryState extends State<Summary> {
   }
 
   Future<void> sendPostReq() async {
-    final String url = "http://127.0.0.1:5000/summary";
+    final String url = "http://127.0.0.1:$port/summary";
 
     Map<String, dynamic> body = {
       'min': minLength,
@@ -53,19 +53,16 @@ class _SummaryState extends State<Summary> {
       );
 
       if (res.statusCode == 200) {
-        setState(() {
-          Map<String, dynamic> mp = jsonDecode(res.body);
-          response = mp['summary']!;
-          _otpTextController.text = response;
-        });
+        Map<String, dynamic> mp = jsonDecode(res.body);
+        response = mp['summary']!;
       } else {
-        setState(() {
-          response = 'Failed to send data. Error : ${res.statusCode}';
-        });
+        response = 'Failed to send data. Error : ${res.statusCode}';
       }
     } catch (e) {
+      response = 'Error $e';
+    } finally {
       setState(() {
-        response = 'Error $e';
+        _otpTextController.text = response;
       });
     }
   }
@@ -152,7 +149,7 @@ class _SummaryState extends State<Summary> {
                           ),
                         ),
                         SizedBox(
-                          width: 200,
+                          width: 250,
                           child: TextFormField(
                             controller: _maxLengthController,
                             keyboardType: TextInputType.number,
@@ -205,7 +202,7 @@ class _SummaryState extends State<Summary> {
                     ),
                     ElevatedButton(
                       onPressed: _submitForm,
-                      child: Text("Submit"),
+                      child: Text("Summarize"),
                     )
                   ],
                 ),
@@ -220,7 +217,7 @@ class _SummaryState extends State<Summary> {
                     minLines: null,
                     maxLines: null,
                     decoration: const InputDecoration(
-                      border: OutlineInputBorder()
+                      border: OutlineInputBorder(),
                     ),
                   ),
                 ),

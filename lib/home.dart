@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:abstractify/summary.dart';
+import 'package:abstractify/grammar.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -13,27 +14,71 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Abstractify"),
+        centerTitle: true,
+        title: const Text(
+          "Abstractify",
+          style: TextStyle(
+            fontSize: 40,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        /*
         leading: IconButton(
           onPressed: () {},
           icon: const Icon(Icons.menu),
+        ),*/
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.all(0),
+          children: <Widget>[
+            SizedBox(
+              height: 270,
+              child: DrawerHeader(
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 100,
+                      backgroundImage: AssetImage("assets/images/download.jpg"),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Text(
+                      "Abstractify",
+                      style: TextStyle(fontFamily: "Audiowide", fontSize: 20),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text("Home"),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text("Setting"),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.groups),
+              title: Text("About Us"),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            )
+          ],
         ),
       ),
       body: SizedBox(
         width: double.infinity,
         height: double.infinity,
-        /*
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.deepPurple,
-                Colors.purple,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          */
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -41,7 +86,6 @@ class _HomeState extends State<Home> {
               style: OutlinedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
-                  /*side: const BorderSide(color: Colors.white),*/
                 ),
               ),
               onPressed: () {
@@ -57,7 +101,7 @@ class _HomeState extends State<Home> {
                 child: Center(
                   child: Text(
                     "Summarizer",
-                    style: TextStyle(fontSize: 20),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -69,7 +113,13 @@ class _HomeState extends State<Home> {
                   /*side: const BorderSide(color: Colors.white),*/
                 ),
               ),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => const Grammar(),
+                  ),
+                );
+              },
               child: const SizedBox(
                 width: 150,
                 height: 150,
@@ -77,7 +127,10 @@ class _HomeState extends State<Home> {
                   child: Text(
                     "Grammar Checker",
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 20),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -96,7 +149,10 @@ class _HomeState extends State<Home> {
                 child: Center(
                   child: Text(
                     "OCR",
-                    style: TextStyle(fontSize: 20),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
