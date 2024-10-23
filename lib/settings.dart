@@ -8,8 +8,39 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
+  bool _darkMode = false;
+
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Settings"),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Dark Mode",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                Switch(
+                  value: _darkMode,
+                  onChanged: (value) {
+                    setState(() {
+                      _darkMode = !_darkMode;
+                    });
+                  },
+                ),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
   }
 }

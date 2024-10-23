@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:abstractify/summary.dart';
 import 'package:abstractify/grammar.dart';
+import 'package:abstractify/settings.dart';
+import 'package:abstractify/aboutus.dart';
+import 'package:abstractify/ocr.dart';
+import 'package:abstractify/models/squareoutlinedbutton.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -22,11 +26,6 @@ class _HomeState extends State<Home> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        /*
-        leading: IconButton(
-          onPressed: () {},
-          icon: const Icon(Icons.menu),
-        ),*/
       ),
       drawer: Drawer(
         child: ListView(
@@ -64,6 +63,11 @@ class _HomeState extends State<Home> {
               title: Text("Setting"),
               onTap: () {
                 Navigator.pop(context);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => const Settings(),
+                  ),
+                );
               },
             ),
             ListTile(
@@ -71,91 +75,52 @@ class _HomeState extends State<Home> {
               title: Text("About Us"),
               onTap: () {
                 Navigator.pop(context);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => const AboutUs(),
+                  ),
+                );
               },
             )
           ],
         ),
       ),
-      body: SizedBox(
-        width: double.infinity,
-        height: double.infinity,
+      body: Center(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              onPressed: () {
+            SquareOutlinedButton(
+              text: "Summarizer",
+              func: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (ctx) => const Summary(),
                   ),
                 );
               },
-              child: const SizedBox(
-                width: 150,
-                height: 150,
-                child: Center(
-                  child: Text(
-                    "Summarizer",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
+              size: 150,
             ),
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  /*side: const BorderSide(color: Colors.white),*/
-                ),
-              ),
-              onPressed: () {
+            SquareOutlinedButton(
+              text: "Grammar Checker",
+              func: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (ctx) => const Grammar(),
                   ),
                 );
               },
-              child: const SizedBox(
-                width: 150,
-                height: 150,
-                child: Center(
-                  child: Text(
-                    "Grammar Checker",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
+              size: 150,
             ),
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  /*side: const BorderSide(color: Colors.white),*/
-                ),
-              ),
-              onPressed: () {},
-              child: const SizedBox(
-                width: 150,
-                height: 150,
-                child: Center(
-                  child: Text(
-                    "OCR",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+            SquareOutlinedButton(
+              text: "OCR",
+              func: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => const Ocr(),
                   ),
-                ),
-              ),
+                );
+              },
+              size: 150,
             ),
           ],
         ),
