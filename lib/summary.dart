@@ -61,9 +61,7 @@ class _SummaryState extends State<Summary> {
     } catch (e) {
       response = 'Error $e';
     } finally {
-      setState(() {
         _otpTextController.text = response;
-      });
     }
   }
 
@@ -93,6 +91,7 @@ class _SummaryState extends State<Summary> {
     }
 
     sendPostReq();
+    _otpTextController.clear();
   }
 
   @override

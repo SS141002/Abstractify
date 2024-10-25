@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:abstractify/handocr.dart';
+import 'package:abstractify/typedocr.dart';
 import 'package:abstractify/models/squareoutlinedbutton.dart';
 
 class Ocr extends StatelessWidget {
@@ -8,24 +10,35 @@ class Ocr extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("OCR"),
+        title: const Text("OCR"),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16),
         child: Center(
           child: Row(
-            mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               SquareOutlinedButton(
-                text: "Typed OCR",
-                func: () {},
                 size: 150,
+                text: "Typed",
+                func: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (ctx) => const TypedOcr(),
+                    ),
+                  );
+                },
               ),
               SquareOutlinedButton(
-                text: "Handwritten OCR",
-                func: () {},
                 size: 150,
+                text: "Handwritten",
+                func: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (ctx) => const HandOcr(),
+                    ),
+                  );
+                },
               ),
             ],
           ),

@@ -41,9 +41,7 @@ class _GrammarState extends State<Grammar> {
     } catch (e) {
       response = 'Error $e';
     } finally {
-      setState(() {
-        _otpTextController.text = response;
-      });
+      _otpTextController.text = response;
     }
   }
 
@@ -55,13 +53,16 @@ class _GrammarState extends State<Grammar> {
     if (text == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Text cannot be null",),
+          content: Text(
+            "Text cannot be null",
+          ),
         ),
       );
       return;
     }
 
     sendPostReq();
+    _otpTextController.clear();
   }
 
   @override
@@ -118,8 +119,9 @@ class _GrammarState extends State<Grammar> {
                   expands: true,
                   minLines: null,
                   maxLines: null,
-                  decoration:
-                      const InputDecoration(border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
             ),

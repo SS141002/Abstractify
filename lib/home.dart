@@ -90,6 +90,7 @@ class _HomeState extends State<Home> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             SquareOutlinedButton(
+              size: 150,
               text: "Summarizer",
               func: () {
                 Navigator.of(context).push(
@@ -98,9 +99,9 @@ class _HomeState extends State<Home> {
                   ),
                 );
               },
-              size: 150,
             ),
             SquareOutlinedButton(
+              size: 150,
               text: "Grammar Checker",
               func: () {
                 Navigator.of(context).push(
@@ -109,9 +110,9 @@ class _HomeState extends State<Home> {
                   ),
                 );
               },
-              size: 150,
             ),
             SquareOutlinedButton(
+              size: 150,
               text: "OCR",
               func: () {
                 Navigator.of(context).push(
@@ -120,7 +121,6 @@ class _HomeState extends State<Home> {
                   ),
                 );
               },
-              size: 150,
             ),
           ],
         ),

@@ -18,9 +18,9 @@ class SquareOutlinedButton extends StatelessWidget {
       style: OutlinedButton.styleFrom(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: BorderSide(
-            width: 10,
-          ),
+        ),
+        side: BorderSide(
+          width: 1.5,
         ),
       ),
       onPressed: func,

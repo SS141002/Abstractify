@@ -19,7 +19,7 @@ void main() async {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(256, 87, 204, 153),
+          seedColor: const Color.fromARGB(256, 163, 177, 138),
         ),
         fontFamily: 'NotoSans'
       ),

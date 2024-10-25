@@ -32,7 +32,7 @@ class _SettingsState extends State<Settings> {
                   value: _darkMode,
                   onChanged: (value) {
                     setState(() {
-                      _darkMode = !_darkMode;
+                      _darkMode = value;
                     });
                   },
                 ),
