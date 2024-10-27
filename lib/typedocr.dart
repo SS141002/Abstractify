@@ -51,13 +51,15 @@ class _TypedOcrState extends State<TypedOcr> {
   }
 
   Future<void> pickImage() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+    );
 
     if (result != null) {
       setState(() {
         _imageFile = File(result.files.single.path!);
       });
-    } else {}
+    }
   }
 
   Future<void> sendImage() async {

@@ -61,7 +61,7 @@ class _SummaryState extends State<Summary> {
     } catch (e) {
       response = 'Error $e';
     } finally {
-        _otpTextController.text = response;
+      _otpTextController.text = response;
     }
   }
 
@@ -87,6 +87,7 @@ class _SummaryState extends State<Summary> {
             content: Text("min length cannot be greater than max length"),
           ),
         );
+        return;
       }
     }
 
@@ -114,15 +115,12 @@ class _SummaryState extends State<Summary> {
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        SizedBox(
-                          width: 250,
+                        Expanded(
                           child: TextFormField(
                             controller: _minLengthController,
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
-                              label: const Text(
-                                "Min Length (Integer)",
-                              ),
+                              labelText: "Min Length (Integer)",
                               errorText: minLengthValid
                                   ? null
                                   : "Please enter a integer",
@@ -134,6 +132,7 @@ class _SummaryState extends State<Summary> {
                               if (int.tryParse(value)! < 5) {
                                 return "Minimum Length Cannot be less than 5";
                               }
+
                               return null;
                             },
                             onChanged: (String val) {
@@ -147,15 +146,15 @@ class _SummaryState extends State<Summary> {
                             },
                           ),
                         ),
-                        SizedBox(
-                          width: 250,
+                        const SizedBox(
+                          width: 30,
+                        ),
+                        Expanded(
                           child: TextFormField(
                             controller: _maxLengthController,
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
-                                label: Text(
-                                  "Max Length (Integer)",
-                                ),
+                                labelText: "Max Length (Integer)",
                                 errorText: maxLengthValid
                                     ? null
                                     : "Please enter a integer"),
@@ -194,6 +193,14 @@ class _SummaryState extends State<Summary> {
                           hintText: "Enter your text here",
                           border: OutlineInputBorder(),
                         ),
+                        validator: (value) {
+                          if (value == null ||
+                              value.isEmpty ||
+                              value.trim().isEmpty) {
+                            return "Enter Text to summarize";
+                          }
+                          return null;
+                        },
                       ),
                     ),
                     const SizedBox(

@@ -14,8 +14,11 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  double? drawerWidth;
+
   @override
   Widget build(BuildContext context) {
+    drawerWidth = MediaQuery.of(context).size.width * 0.25;
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -28,8 +31,9 @@ class _HomeState extends State<Home> {
         ),
       ),
       drawer: Drawer(
+        width: drawerWidth,
         child: ListView(
-          padding: EdgeInsets.all(0),
+          padding: EdgeInsets.all(8),
           children: <Widget>[
             SizedBox(
               height: 270,
@@ -53,14 +57,14 @@ class _HomeState extends State<Home> {
             ),
             ListTile(
               leading: Icon(Icons.home),
-              title: Text("Home"),
+              title: Text(" Home"),
               onTap: () {
                 Navigator.pop(context);
               },
             ),
             ListTile(
               leading: Icon(Icons.settings),
-              title: Text("Setting"),
+              title: Text(" Setting"),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).push(
@@ -72,7 +76,7 @@ class _HomeState extends State<Home> {
             ),
             ListTile(
               leading: Icon(Icons.groups),
-              title: Text("About Us"),
+              title: Text(" About Us"),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).push(
@@ -87,7 +91,7 @@ class _HomeState extends State<Home> {
       ),
       body: Center(
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             SquareOutlinedButton(
               size: 150,
