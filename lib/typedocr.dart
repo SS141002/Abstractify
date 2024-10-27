@@ -13,9 +13,12 @@ class TypedOcr extends StatefulWidget {
 
 class _TypedOcrState extends State<TypedOcr> {
   final _otpTextController = TextEditingController();
+
   File? _imageFile;
   int port = 5000;
+  bool isLoading = false;
   String? _selectedLanguage;
+
   final List<String> _selectedlanguageCodes = [];
   final Map<String, String> _languages = {
     'English': 'en',
@@ -76,7 +79,13 @@ class _TypedOcrState extends State<TypedOcr> {
 
         request.fields['languages'] = jsonEncode(_selectedlanguageCodes);
 
+        setState(() {
+          isLoading = true;
+        });
         final res = await request.send();
+        setState(() {
+          isLoading = false;
+        });
         final resbody = await res.stream.bytesToString();
 
         if (res.statusCode == 200) {
@@ -192,9 +201,13 @@ class _TypedOcrState extends State<TypedOcr> {
                   Row(
                     children: [
                       Spacer(),
-                      ElevatedButton(
-                        onPressed: sendImage,
-                        child: Text("Process"),
+                      Container(
+                        child: isLoading
+                            ? const CircularProgressIndicator()
+                            : ElevatedButton(
+                                onPressed: sendImage,
+                                child: Text("Process"),
+                              ),
                       ),
                       Spacer(),
                     ],

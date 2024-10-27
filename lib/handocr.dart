@@ -21,7 +21,7 @@ class _HandOcrState extends State<HandOcr> {
   final _overlapUpperController = TextEditingController();
   final _overlapLowerController = TextEditingController();
   final _minHeightController = TextEditingController();
-  final _minWhiteController = TextEditingController(text: "150");
+  final _minWhiteController = TextEditingController(text: "125");
   final _maxWhiteController = TextEditingController(text: "225");
   final _otpTextController = TextEditingController();
 
@@ -34,6 +34,7 @@ class _HandOcrState extends State<HandOcr> {
   bool maxWhiteValid = true;
 
   File? _imageFile;
+  bool isLoading = false;
 
   int port = 5000;
   int? imgWidth, imgHeight;
@@ -84,7 +85,14 @@ class _HandOcrState extends State<HandOcr> {
     request.fields['minWhite'] = _minWhiteController.text;
     request.fields['maxWhite'] = _maxWhiteController.text;
 
+    setState(() {
+      isLoading = true;
+    });
     final res = await request.send();
+    setState(() {
+      isLoading = false;
+    });
+
     final resBody = await res.stream.bytesToString();
 
     if (res.statusCode == 200) {
@@ -530,9 +538,19 @@ class _HandOcrState extends State<HandOcr> {
                     const SizedBox(
                       height: 30,
                     ),
-                    ElevatedButton(
-                      onPressed: _submitForm,
-                      child: Text("Process"),
+                    Row(
+                      children: [
+                        Spacer(),
+                        Container(
+                          child: isLoading
+                              ? const CircularProgressIndicator()
+                              : ElevatedButton(
+                                  onPressed: _submitForm,
+                                  child: Text("Process"),
+                                ),
+                        ),
+                        Spacer(),
+                      ],
                     ),
                   ],
                 ),

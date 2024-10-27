@@ -14,7 +14,7 @@ class AboutUs extends StatelessWidget {
       body: Padding(
         padding: EdgeInsets.all(16),
         child: Center(
-          child: Text("huh"),
+          child: Text("Nothing Here, for now"),
         ),
       ),
     );

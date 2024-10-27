@@ -24,6 +24,7 @@ class _SummaryState extends State<Summary> {
 
   bool minLengthValid = true;
   bool maxLengthValid = true;
+  bool isLoading = false;
 
   var response = "";
 
@@ -46,11 +47,17 @@ class _SummaryState extends State<Summary> {
     };
 
     try {
+      setState(() {
+        isLoading = true;
+      });
       final res = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
       );
+      setState(() {
+        isLoading = false;
+      });
 
       if (res.statusCode == 200) {
         Map<String, dynamic> mp = jsonDecode(res.body);
@@ -129,10 +136,14 @@ class _SummaryState extends State<Summary> {
                               if (value == null || value.isEmpty) {
                                 return "Please enter a minimum length";
                               }
-                              if (int.tryParse(value)! < 5) {
-                                return "Minimum Length Cannot be less than 5";
+                              if (int.tryParse(value) == null) {
+                                return "please enter valid number";
+                              } else {
+                                int num = int.parse(value);
+                                if (num < 5) {
+                                  return "it should be > 5";
+                                }
                               }
-
                               return null;
                             },
                             onChanged: (String val) {
@@ -162,8 +173,13 @@ class _SummaryState extends State<Summary> {
                               if (value == null || value.isEmpty) {
                                 return "Please enter a maximum length";
                               }
-                              if (int.tryParse(value)! > 250) {
-                                return "Minimum Length Cannot be more than 250";
+                              if (int.tryParse(value) == null) {
+                                return "please enter valid number";
+                              } else {
+                                int num = int.parse(value);
+                                if (num > 250) {
+                                  return "it should be < 250";
+                                }
                               }
                               return null;
                             },
@@ -181,7 +197,7 @@ class _SummaryState extends State<Summary> {
                       ],
                     ),
                     const SizedBox(
-                      height: 30,
+                      height: 20,
                     ),
                     Expanded(
                       child: TextFormField(
@@ -204,11 +220,15 @@ class _SummaryState extends State<Summary> {
                       ),
                     ),
                     const SizedBox(
-                      height: 30,
+                      height: 20,
                     ),
-                    ElevatedButton(
-                      onPressed: _submitForm,
-                      child: Text("Summarize"),
+                    Container(
+                      child: isLoading
+                          ? const CircularProgressIndicator()
+                          : ElevatedButton(
+                              onPressed: _submitForm,
+                              child: Text("Summarize"),
+                            ),
                     )
                   ],
                 ),

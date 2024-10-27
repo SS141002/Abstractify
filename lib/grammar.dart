@@ -17,7 +17,7 @@ class _GrammarState extends State<Grammar> {
 
   String? text;
   int port = 5000;
-
+  bool isLoading = false;
   var response = "";
 
   Future<void> sendPostReq() async {
@@ -26,11 +26,17 @@ class _GrammarState extends State<Grammar> {
     Map<String, dynamic> body = {'text': text};
 
     try {
+      setState(() {
+        isLoading = true;
+      });
       final res = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
       );
+      setState(() {
+        isLoading = false;
+      });
 
       if (res.statusCode == 200) {
         Map<String, dynamic> mp = jsonDecode(res.body);
@@ -102,9 +108,13 @@ class _GrammarState extends State<Grammar> {
                     const SizedBox(
                       height: 30,
                     ),
-                    ElevatedButton(
-                      onPressed: _submitForm,
-                      child: Text("Check"),
+                    Container(
+                      child: isLoading
+                          ? const CircularProgressIndicator()
+                          : ElevatedButton(
+                              onPressed: _submitForm,
+                              child: Text("Check"),
+                            ),
                     )
                   ],
                 ),
