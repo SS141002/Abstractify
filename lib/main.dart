@@ -10,7 +10,7 @@ void main() async {
 
   if (Platform.isWindows) {
     WindowManager.instance.setMinimumSize(const Size(1280, 720));
-    WindowManager.instance.setAspectRatio(16/9);
+    WindowManager.instance.setAspectRatio(16 / 9);
   }
 
   runApp(
@@ -19,10 +19,18 @@ void main() async {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(256, 163, 177, 138),
-        ),
-        fontFamily: 'NotoSans'
+            seedColor: const Color.fromARGB(256, 163, 177, 138),
+            brightness: Brightness.light),
+        fontFamily: 'NotoSans',
       ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color.fromARGB(255, 58, 90, 64),
+            brightness: Brightness.dark),
+        fontFamily: 'NotoSans',
+      ),
+      themeMode: ThemeMode.system,
       home: const Home(),
     ),
   );

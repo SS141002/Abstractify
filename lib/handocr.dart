@@ -18,15 +18,17 @@ class _HandOcrState extends State<HandOcr> {
 
   final _kWidthController = TextEditingController();
   final _kHeightController = TextEditingController();
-  final _overlapController = TextEditingController();
+  final _overlapUpperController = TextEditingController();
+  final _overlapLowerController = TextEditingController();
   final _minHeightController = TextEditingController();
   final _minWhiteController = TextEditingController(text: "150");
-  final _maxWhiteController = TextEditingController(text: "250");
+  final _maxWhiteController = TextEditingController(text: "225");
   final _otpTextController = TextEditingController();
 
   bool kernelHeightValid = true;
   bool kernelWidthValid = true;
-  bool overlapValid = true;
+  bool overlapUpperValid = true;
+  bool overlapLowerValid = true;
   bool minThresValid = true;
   bool minWhiteValid = true;
   bool maxWhiteValid = true;
@@ -76,7 +78,8 @@ class _HandOcrState extends State<HandOcr> {
     request.fields['type'] = method.toString();
     request.fields['kHeight'] = _kHeightController.text;
     request.fields['kWidth'] = _kWidthController.text;
-    request.fields['overlap'] = _overlapController.text;
+    request.fields['overlapUp'] = _overlapUpperController.text;
+    request.fields['overlapDn'] = _overlapLowerController.text;
     request.fields['minHeight'] = _minHeightController.text;
     request.fields['minWhite'] = _minWhiteController.text;
     request.fields['maxWhite'] = _maxWhiteController.text;
@@ -118,7 +121,8 @@ class _HandOcrState extends State<HandOcr> {
   void dispose() {
     _kWidthController.dispose();
     _kHeightController.dispose();
-    _overlapController.dispose();
+    _overlapUpperController.dispose();
+    _overlapLowerController.dispose();
     _minHeightController.dispose();
     _minWhiteController.dispose();
     _maxWhiteController.dispose();
@@ -306,57 +310,104 @@ class _HandOcrState extends State<HandOcr> {
                     const SizedBox(
                       height: 15,
                     ),
-                    TextFormField(
-                      controller: _overlapController,
-                      enabled: method == MethodDt.dilated,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: "Overlap (px)",
-                        helperText: "It sets how much can images overlap",
-                        errorText: (overlapValid || method != MethodDt.dilated)
-                            ? null
-                            : "Please enter valid integer",
-                      ),
-                      onChanged: (String value) {
-                        final val = int.tryParse(value);
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _overlapUpperController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: "Overlap (px)",
+                              helperText:
+                                  "It sets how much can images overlap from top",
+                              errorText: (overlapUpperValid)
+                                  ? null
+                                  : "Please enter valid integer",
+                            ),
+                            onChanged: (String value) {
+                              final val = int.tryParse(value);
 
-                        if (val == null) {
-                          setState(() => overlapValid = false);
-                        } else {
-                          setState(() => overlapValid = true);
-                        }
-                      },
-                      validator: (value) {
-                        if (method == MethodDt.lineDetection) {
-                          return null;
-                        } else {
-                          if (value == null || value.isEmpty) {
-                            return "Please Enter overlap";
-                          }
-                          if (int.tryParse(value) == null) {
-                            return "please enter valid number";
-                          } else {
-                            int num = int.parse(value);
-                            if (num < 0 || num > (0.25 * imgHeight!)) {
-                              return "Values must be between 0 and ${0.25 * imgHeight!}";
-                            }
-                          }
-                        }
-                        return null;
-                      },
+                              if (val == null) {
+                                setState(() => overlapUpperValid = false);
+                              } else {
+                                setState(() => overlapUpperValid = true);
+                              }
+                            },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Please Enter overlap";
+                              }
+                              if (int.tryParse(value) == null) {
+                                return "please enter valid number";
+                              } else {
+                                int num = int.parse(value);
+                                if (num < 0 || num > (0.25 * imgHeight!)) {
+                                  return "Values must be between 0 and ${0.25 * imgHeight!}";
+                                }
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 30,
+                        ),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _overlapLowerController,
+                            enabled: method == MethodDt.lineDetection,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: "Overlap (px)",
+                              helperText:
+                                  "It sets how much can images overlap from bottom",
+                              errorText: (overlapLowerValid ||
+                                      method != MethodDt.lineDetection)
+                                  ? null
+                                  : "Please enter valid integer",
+                            ),
+                            onChanged: (String value) {
+                              final val = int.tryParse(value);
+
+                              if (val == null) {
+                                setState(() => overlapLowerValid = false);
+                              } else {
+                                setState(() => overlapLowerValid = true);
+                              }
+                            },
+                            validator: (value) {
+                              if (method == MethodDt.dilated) {
+                                return null;
+                              } else {
+                                if (value == null || value.isEmpty) {
+                                  return "Please Enter overlap";
+                                }
+                                if (int.tryParse(value) == null) {
+                                  return "please enter valid number";
+                                } else {
+                                  int num = int.parse(value);
+                                  if (num < 0 || num > (0.25 * imgHeight!)) {
+                                    return "Values must be between 0 and ${0.25 * imgHeight!}";
+                                  }
+                                }
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(
                       height: 15,
                     ),
                     TextFormField(
                       controller: _minHeightController,
-                      enabled: method == MethodDt.dilated,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         labelText: "Minimum Height Threshold (px)",
                         helperText:
                             "It sets how much minimum height a image should have to be considered as text",
-                        errorText: (minThresValid || method != MethodDt.dilated)
+                        errorText: (minThresValid)
                             ? null
                             : "Please enter valid integer",
                       ),
@@ -370,19 +421,15 @@ class _HandOcrState extends State<HandOcr> {
                         }
                       },
                       validator: (value) {
-                        if (method == MethodDt.lineDetection) {
-                          return null;
+                        if (value == null || value.isEmpty) {
+                          return "Please height threshold";
+                        }
+                        if (int.tryParse(value) == null) {
+                          return "please enter valid number";
                         } else {
-                          if (value == null || value.isEmpty) {
-                            return "Please height threshold";
-                          }
-                          if (int.tryParse(value) == null) {
-                            return "please enter valid number";
-                          } else {
-                            int num = int.parse(value);
-                            if (num < 1 || num > imgHeight!) {
-                              return "Values must be between 1 and $imgHeight";
-                            }
+                          int num = int.parse(value);
+                          if (num < 1 || num > imgHeight!) {
+                            return "Values must be between 1 and $imgHeight";
                           }
                         }
                         return null;

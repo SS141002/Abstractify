@@ -84,59 +84,92 @@ def ocrtyped():
 
 @app.route('/ocrhand', methods=['POST'])
 def ocrhand():
+    fields = ['type', 'kHeight', 'kWidth', 'overlapUp', 'overlapDn', 'minHeight', 'minWhite', 'maxWhite']
     if 'image' not in request.files:
         return {'error': 'No image part in request'}, 400
-    if 'type' not in request.form:
-        return {'error': 'NO type part in request'}, 400
+
+    for field in fields:
+        if field not in request.form:
+            return {'error': f'no {field} part in request'}, 400
 
     text = ""
     file = request.files['image']
+
     if file.filename == '':
         return {'error': 'No selected File'}, 400
 
     typeocr = request.form.get('type')
+    overlapup = int(request.form.get('overlapUp'))
+    minheight = int(request.form.get('minHeight'))
+
+    processor = TrOCRProcessor.from_pretrained('microsoft/trocr-large-handwritten')
+    model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-large-handwritten')
+
+    file_bytes = np.frombuffer(file.read(), np.uint8)
+    image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
     if typeocr == "MethodDt.dilated":
         kheight = int(request.form.get('kHeight'))
         kwidth = int(request.form.get('kWidth'))
-        overlap = int(request.form.get('overlap'))
-        minheight = int(request.form.get('minHeight'))
 
         try:
-            file_bytes = np.frombuffer(file.read(), np.uint8)
-            image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
             _, binary_image = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY_INV)
-
             kernel = np.ones((kheight, kwidth), np.uint8)
             dilated = cv2.dilate(binary_image, kernel, iterations=1)
-
             contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
             contours = sorted(contours, key=lambda c: cv2.boundingRect(c)[1])
-
-            processor = TrOCRProcessor.from_pretrained('microsoft/trocr-large-handwritten')
-            model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-large-handwritten')
 
             for i, contour in enumerate(contours):
                 x, y, w, h = cv2.boundingRect(contour)
-                if h >= minheight:
-                    y_start = max(0, y - overlap)
-                    y_end = min(gray.shape[0], y + h + overlap)
 
+                if h >= minheight:
+                    y_start = max(0, y - overlapup)
+                    y_end = min(gray.shape[0], y + h + overlapup)
                     cropped_image = image[y_start:y_end, :]
 
                     if np.mean(cropped_image) < 252.5:
                         pixel_values = processor(images=cropped_image, return_tensors="pt").pixel_values
-
                         generated_ids = model.generate(pixel_values)
                         generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
-
                         text = text + '\n' + generated_text
+
+            return jsonify({'text': text}), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    else:
+        minwhite = int(request.form.get('minWhite'))
+        maxwhite = int(request.form.get('maxWhite'))
+        overlapdn = int(request.form.get('overlapDn'))
+
+        try:
+            binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+            horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (image.shape[1] // 20, 1))
+            detect_lines = cv2.morphologyEx(binary, cv2.MORPH_OPEN, horizontal_kernel, iterations=2)
+            contours, _ = cv2.findContours(detect_lines, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[1])
+            line_boundaries = [cv2.boundingRect(contour)[1] for contour in contours]
+
+            if len(line_boundaries) < 2:
+                return jsonify({'error': "Not enough lines detected to split the image"}), 500
+
+            for idx in range(len(line_boundaries) - 1):
+                y_top = line_boundaries[idx] - overlapup
+                y_bottom = line_boundaries[idx + 1] + overlapdn
+
+                if y_bottom - y_top > minheight:
+                    line_image = image[y_top:y_bottom, :]
+
+                    if minwhite < np.mean(line_image) < maxwhite:
+                        pixel_values = processor(images=line_image, return_tensors="pt").pixel_values
+                        generated_ids = model.generate(pixel_values)
+                        generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+                        text = text + '\n' + generated_text
+
             return jsonify({'text': text}), 200
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':
-    app.run(port=port)
+    app.run(port=port, debug=True)

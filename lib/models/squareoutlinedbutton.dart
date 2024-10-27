@@ -21,6 +21,9 @@ class SquareOutlinedButton extends StatelessWidget {
         ),
         side: BorderSide(
           width: 1.5,
+          color: (Theme.of(context).brightness == Brightness.light)
+              ? Colors.black
+              : Colors.white,
         ),
       ),
       onPressed: func,
