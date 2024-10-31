@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -29,10 +31,19 @@ class _GrammarState extends State<Grammar> {
       setState(() {
         isLoading = true;
       });
-      final res = await http.post(
+      final res = await http
+          .post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
+      )
+          .timeout(
+        Duration(
+          seconds: 10,
+        ),
+        onTimeout: () {
+          throw TimeoutException("The request timed out..");
+        },
       );
       setState(() {
         isLoading = false;
@@ -44,31 +55,37 @@ class _GrammarState extends State<Grammar> {
       } else {
         response = 'Failed to send data. Error : ${res.statusCode}';
       }
+    } on TimeoutException catch (_) {
+      isLoading = false;
+      response = "The request timed out.";
     } catch (e) {
       response = 'Error $e';
     } finally {
       _otpTextController.text = response;
     }
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   void _submitForm() {
     if (_formkey.currentState!.validate()) {
       text = _textController.text;
-    }
 
-    if (text == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Text cannot be null",
+      if (text == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Text cannot be null",
+            ),
           ),
-        ),
-      );
-      return;
+        );
+        return;
+      }
+      _otpTextController.clear();
+      sendPostReq();
     }
-
-    sendPostReq();
-    _otpTextController.clear();
   }
 
   @override
@@ -101,8 +118,17 @@ class _GrammarState extends State<Grammar> {
                         minLines: null,
                         maxLines: null,
                         decoration: const InputDecoration(
-                            hintText: "Enter your text here",
-                            border: OutlineInputBorder()),
+                          hintText: "Enter your text here",
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null ||
+                              value.isEmpty ||
+                              value.trim().isEmpty) {
+                            return "Enter Text to check";
+                          }
+                          return null;
+                        },
                       ),
                     ),
                     const SizedBox(

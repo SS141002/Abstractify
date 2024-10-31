@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:abstractify/handocr.dart';
-import 'package:abstractify/typedocr.dart';
+import 'package:abstractify/screens/handocr.dart';
+import 'package:abstractify/screens/typedocr.dart';
 import 'package:abstractify/models/squareoutlinedbutton.dart';
 
 class Ocr extends StatelessWidget {

@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:abstractify/home.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
-//import 'package:serious_python/serious_python.dart';
+import 'package:abstractify/app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,24 +14,8 @@ void main() async {
   }
 
   runApp(
-    MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color.fromARGB(256, 163, 177, 138),
-            brightness: Brightness.light),
-        fontFamily: 'NotoSans',
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color.fromARGB(255, 58, 90, 64),
-            brightness: Brightness.dark),
-        fontFamily: 'NotoSans',
-      ),
-      themeMode: ThemeMode.system,
-      home: const Home(),
+    ProviderScope(
+      child: MyApp(),
     ),
   );
 }

@@ -1,0 +1,7 @@
+easyocr
+numpy
+opencv-python
+Flask
+transformers
+happytransformer
+torch

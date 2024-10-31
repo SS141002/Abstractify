@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ class _TypedOcrState extends State<TypedOcr> {
   int port = 5000;
   bool isLoading = false;
   String? _selectedLanguage;
+  var response = "";
 
   final List<String> _selectedlanguageCodes = [];
   final Map<String, String> _languages = {
@@ -78,22 +80,41 @@ class _TypedOcrState extends State<TypedOcr> {
         );
 
         request.fields['languages'] = jsonEncode(_selectedlanguageCodes);
+        try {
+          setState(() {
+            isLoading = true;
+          });
+          final res = await request.send().timeout(
+            Duration(
+              seconds: 10,
+            ),
+            onTimeout: () {
+              throw TimeoutException("The request timed out..");
+            },
+          );
+          setState(() {
+            isLoading = false;
+          });
+          final resbody = await res.stream.bytesToString();
 
-        setState(() {
-          isLoading = true;
-        });
-        final res = await request.send();
+          if (res.statusCode == 200) {
+            Map<String, dynamic> body = jsonDecode(resbody);
+            response = body['text'];
+          } else {
+            response = "failed to upload : ${res.statusCode}";
+          }
+        } on TimeoutException catch (_) {
+          isLoading = false;
+          response = "The request timed out.";
+        } catch (e) {
+          response = 'Error $e';
+        } finally {
+          _otpTextController.text = response;
+        }
+
         setState(() {
           isLoading = false;
         });
-        final resbody = await res.stream.bytesToString();
-
-        if (res.statusCode == 200) {
-          Map<String, dynamic> response = jsonDecode(resbody);
-          _otpTextController.text = response['text'];
-        } else {
-          _otpTextController.text = "failed to upload : ${res.statusCode}";
-        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

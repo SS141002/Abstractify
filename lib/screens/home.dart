@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:abstractify/summary.dart';
-import 'package:abstractify/grammar.dart';
-import 'package:abstractify/settings.dart';
-import 'package:abstractify/aboutus.dart';
-import 'package:abstractify/ocr.dart';
+import 'package:abstractify/screens/summary.dart';
+import 'package:abstractify/screens/grammar.dart';
+import 'package:abstractify/screens/settings.dart';
+import 'package:abstractify/screens/aboutus.dart';
+import 'package:abstractify/screens/ocr.dart';
 import 'package:abstractify/models/squareoutlinedbutton.dart';
 
 class Home extends StatefulWidget {

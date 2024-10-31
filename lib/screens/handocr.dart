@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -35,6 +36,7 @@ class _HandOcrState extends State<HandOcr> {
 
   File? _imageFile;
   bool isLoading = false;
+  var response = "";
 
   int port = 5000;
   int? imgWidth, imgHeight;
@@ -85,22 +87,42 @@ class _HandOcrState extends State<HandOcr> {
     request.fields['minWhite'] = _minWhiteController.text;
     request.fields['maxWhite'] = _maxWhiteController.text;
 
-    setState(() {
-      isLoading = true;
-    });
-    final res = await request.send();
+    try {
+      setState(() {
+        isLoading = true;
+      });
+      final res = await request.send().timeout(
+        Duration(
+          seconds: 60,
+        ),
+        onTimeout: () {
+          throw TimeoutException("The request timed out..");
+        },
+      );
+      setState(() {
+        isLoading = false;
+      });
+
+      final resBody = await res.stream.bytesToString();
+
+      if (res.statusCode == 200) {
+        Map<String, dynamic> body = jsonDecode(resBody);
+        response = body['text'];
+      } else {
+        response = "failed to upload : ${res.statusCode}";
+      }
+    } on TimeoutException catch (_) {
+      isLoading = false;
+      response = "The request timed out.";
+    } catch (e) {
+      response = 'Error $e';
+    } finally {
+      _otpTextController.text = response;
+    }
+
     setState(() {
       isLoading = false;
     });
-
-    final resBody = await res.stream.bytesToString();
-
-    if (res.statusCode == 200) {
-      Map<String, dynamic> response = jsonDecode(resBody);
-      _otpTextController.text = response['text'];
-    } else {
-      _otpTextController.text = "failed to upload : ${res.statusCode}";
-    }
   }
 
   void _submitForm() {
@@ -109,13 +131,14 @@ class _HandOcrState extends State<HandOcr> {
         int min = int.parse(_minWhiteController.text);
         int max = int.parse(_maxWhiteController.text);
         if (min < max) {
-          sendPostReq();
           _otpTextController.clear();
+          sendPostReq();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-                content: Text(
-                    "minimum brightness cannot exceed maximum brightness")),
+              content:
+                  Text("minimum brightness cannot exceed maximum brightness"),
+            ),
           );
         }
       }

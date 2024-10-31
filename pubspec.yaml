@@ -14,10 +14,12 @@ dependencies:
   flutter:
     sdk: flutter
   window_manager: ^0.4.2
-  cupertino_icons: ^1.0.8
   http: ^1.2.2
   file_picker: ^8.1.3
-  # serious_python: ^0.8.1
+  flutter_riverpod: ^2.6.1
+  url_launcher: ^6.3.1
+  lottie: ^3.1.3
+  # cupertino_icons: ^1.0.8
 
 dev_dependencies:
   flutter_test:
@@ -36,4 +38,5 @@ flutter:
       fonts:
         - asset: assets/fonts/Audiowide.ttf
   assets:
-    - assets/images/download.jpg
+    - assets/images/
+    - assets/animations/waiting.json

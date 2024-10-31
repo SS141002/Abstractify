@@ -1,11 +1,13 @@
 import json
 import re
-from flask import Flask, request, jsonify
-from transformers import pipeline, TrOCRProcessor, VisionEncoderDecoderModel
-from happytransformer import HappyTextToText, TTSettings
+import torch
 import easyocr
 import numpy as np
 import cv2
+from flask import Flask, request, jsonify
+from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+from transformers import BartTokenizer, BartForConditionalGeneration
+from happytransformer import HappyTextToText, TTSettings
 
 app = Flask(__name__)
 port = 5000
@@ -18,8 +20,6 @@ def clean_text(text):
 @app.route('/summary', methods=['POST'])
 def summary():
     data = request.get_json()
-    pipe = pipeline("summarization", model="facebook/bart-large-cnn")
-
     if 'min' not in data:
         return jsonify({'error': 'Minimum Length not provided'}), 400
     if 'max' not in data:
@@ -31,9 +31,20 @@ def summary():
     minlength = data['min']
     maxlength = data['max']
 
+    save_dir = "./models/bart/"
+    tokenizer = BartTokenizer.from_pretrained(save_dir)
+    model = BartForConditionalGeneration.from_pretrained(save_dir)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+
     try:
-        summarydata = pipe(long_text, min_length=minlength, max_length=maxlength, do_sample=False)
-        return jsonify({'summary': summarydata[0]['summary_text']})
+        inputs = tokenizer(long_text, max_length=2048, return_tensors="pt", truncation=True)
+        inputs = {key: value.to(device) for key, value in inputs.items()}
+
+        summary_ids = model.generate(inputs["input_ids"], max_length=maxlength, min_length=minlength,
+                                     length_penalty=2.0, num_beams=4, early_stopping=True)
+        summary_text = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+        return jsonify({'summary': summary_text})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -41,7 +52,7 @@ def summary():
 @app.route('/grammar', methods=['POST'])
 def grammar():
     data = request.get_json()
-    happy_tt = HappyTextToText("T5", "vennify/t5-base-grammar-correction")
+    happy_tt = HappyTextToText("T5", "./models/t5/")
     args = TTSettings(num_beams=5, min_length=1)
 
     if 'text' not in data:
@@ -73,7 +84,7 @@ def ocrtyped():
     try:
         file_bytes = np.frombuffer(file.read(), np.uint8)
         image_rec = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-        reader = easyocr.Reader(lang_list=languages, gpu=True, model_storage_directory="./.easyocr/model/")
+        reader = easyocr.Reader(lang_list=languages, gpu=True, model_storage_directory="./models/easyocr/")
         result = reader.readtext(image=image_rec)
         for i in result:
             str_rs += (i[1] + " ")
@@ -102,8 +113,9 @@ def ocrhand():
     overlapup = int(request.form.get('overlapUp'))
     minheight = int(request.form.get('minHeight'))
 
-    processor = TrOCRProcessor.from_pretrained('microsoft/trocr-large-handwritten')
-    model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-large-handwritten')
+    save_dir = "./models/trocr/"
+    processor = TrOCRProcessor.from_pretrained(save_dir)
+    model = VisionEncoderDecoderModel.from_pretrained(save_dir)
 
     file_bytes = np.frombuffer(file.read(), np.uint8)
     image = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
@@ -172,4 +184,4 @@ def ocrhand():
 
 
 if __name__ == '__main__':
-    app.run(port=port, debug=True)
+    app.run(port=port)

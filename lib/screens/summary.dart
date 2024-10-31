@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:lottie/lottie.dart';
 
 class Summary extends StatefulWidget {
   const Summary({super.key});
@@ -12,8 +14,8 @@ class Summary extends StatefulWidget {
 class _SummaryState extends State<Summary> {
   final _formkey = GlobalKey<FormState>();
 
-  final _minLengthController = TextEditingController(text: "10");
-  final _maxLengthController = TextEditingController(text: "50");
+  final _minLengthController = TextEditingController(text: "20");
+  final _maxLengthController = TextEditingController(text: "80");
   final _textController = TextEditingController();
   final _otpTextController = TextEditingController();
 
@@ -50,11 +52,22 @@ class _SummaryState extends State<Summary> {
       setState(() {
         isLoading = true;
       });
-      final res = await http.post(
+
+      final res = await http
+          .post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
+      )
+          .timeout(
+        Duration(
+          seconds: 15,
+        ),
+        onTimeout: () {
+          throw TimeoutException("The request timed out..");
+        },
       );
+
       setState(() {
         isLoading = false;
       });
@@ -65,11 +78,18 @@ class _SummaryState extends State<Summary> {
       } else {
         response = 'Failed to send data. Error : ${res.statusCode}';
       }
+    } on TimeoutException catch (_) {
+      isLoading = false;
+      response = "The request timed out.";
     } catch (e) {
       response = 'Error $e';
     } finally {
       _otpTextController.text = response;
     }
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   void _submitForm() {
@@ -77,16 +97,6 @@ class _SummaryState extends State<Summary> {
       minLength = int.tryParse(_minLengthController.text);
       maxLength = int.tryParse(_maxLengthController.text);
       text = _textController.text;
-
-      if (minLength == null || maxLength == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                "please enter valid integer values for min length and mex length "),
-          ),
-        );
-        return;
-      }
 
       if (minLength! > maxLength!) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -96,10 +106,9 @@ class _SummaryState extends State<Summary> {
         );
         return;
       }
+      _otpTextController.clear();
+      sendPostReq();
     }
-
-    sendPostReq();
-    _otpTextController.clear();
   }
 
   @override
@@ -224,10 +233,18 @@ class _SummaryState extends State<Summary> {
                     ),
                     Container(
                       child: isLoading
-                          ? const CircularProgressIndicator()
+                          ? SizedBox(
+                              height: 40,
+                              child: Lottie.asset(
+                                "assets/animations/waiting.json",
+                                frameRate: FrameRate(60),
+                              ),
+                            )
                           : ElevatedButton(
                               onPressed: _submitForm,
-                              child: Text("Summarize"),
+                              child: Text(
+                                "Summarize",
+                              ),
                             ),
                     )
                   ],
