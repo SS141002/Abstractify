@@ -87,6 +87,7 @@ class _TypedOcrState extends State<TypedOcr> {
           setState(() {
             isLoading = true;
           });
+          _otpTextController.clear();
           final res = await request.send().timeout(
             Duration(
               seconds: 10,

@@ -21,16 +21,16 @@ class _SummaryState extends State<Summary> {
   final _textController = TextEditingController();
   final _otpTextController = TextEditingController();
 
+  String? text;
+  String? response;
+
   int? minLength;
   int? maxLength;
-  String? text;
   int port = 5000;
 
   bool minLengthValid = true;
   bool maxLengthValid = true;
   bool isLoading = false;
-
-  var response = "";
 
   @override
   void dispose() {
@@ -86,7 +86,7 @@ class _SummaryState extends State<Summary> {
     } catch (e) {
       response = 'Error $e';
     } finally {
-      _otpTextController.text = response;
+      _otpTextController.text = response ?? "";
     }
 
     setState(() {

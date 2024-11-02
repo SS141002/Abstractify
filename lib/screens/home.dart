@@ -2,19 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:abstractify/models/floatingactbutton.dart';
 import 'package:abstractify/screens/navdrawer.dart';
 
-class Home extends StatefulWidget {
+class Home extends StatelessWidget {
   const Home({super.key});
 
   @override
-  State<Home> createState() => _HomeState();
-}
-
-class _HomeState extends State<Home> {
-  double? drawerWidth;
-
-  @override
   Widget build(BuildContext context) {
-    drawerWidth = MediaQuery.of(context).size.width * 0.25;
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,

@@ -25,6 +25,7 @@ class Ocr extends StatelessWidget {
             children: [
               FloatingActButton(
                 text: "Typed",
+                size: 150,
                 func: () {
                   Navigator.of(context).pushNamed('/ocr/typed');
                 },
@@ -32,6 +33,7 @@ class Ocr extends StatelessWidget {
               ),
               FloatingActButton(
                 text: "Handwritten",
+                size: 150,
                 func: () {
                   Navigator.of(context).pushNamed('/ocr/hand');
                 },
