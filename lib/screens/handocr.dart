@@ -2,8 +2,11 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:abstractify/screens/navdrawer.dart';
+import 'package:abstractify/models/floatingactbutton.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 
 enum MethodDt { dilated, lineDetection }
 
@@ -165,10 +168,16 @@ class _HandOcrState extends State<HandOcr> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Handwritten OCR"),
+        title: Text(
+          "Handwritten OCR",
+        ),
+        actions: [
+          BackButton(),
+        ],
       ),
+      drawer: NavDrawer(),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
         child: Form(
           key: _formKey,
           child: Row(
@@ -558,29 +567,30 @@ class _HandOcrState extends State<HandOcr> {
                         ),
                       ],
                     ),
-                    const SizedBox(
-                      height: 30,
-                    ),
-                    Row(
-                      children: [
-                        Spacer(),
-                        Container(
-                          child: isLoading
-                              ? const CircularProgressIndicator()
-                              : ElevatedButton(
-                                  onPressed: _submitForm,
-                                  child: Text("Process"),
+                    Expanded(child: SizedBox()),
+                    SizedBox(
+                      height: 80,
+                      child: Center(
+                        child: isLoading
+                            ? SizedBox(
+                                height: 75,
+                                child: Lottie.asset(
+                                  "assets/animations/waiting.json",
+                                  frameRate: FrameRate(60),
                                 ),
-                        ),
-                        Spacer(),
-                      ],
+                              )
+                            : FloatingActButton(
+                                text: "Process",
+                                func: _submitForm,
+                              ),
+                      ),
                     ),
                   ],
                 ),
               ),
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(16, 0, 0, 0),
+                  padding: EdgeInsets.fromLTRB(16, 0, 0, 16),
                   child: TextField(
                     controller: _otpTextController,
                     expands: true,

@@ -2,8 +2,11 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:abstractify/screens/navdrawer.dart';
+import 'package:abstractify/models/floatingactbutton.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 
 class TypedOcr extends StatefulWidget {
   const TypedOcr({super.key});
@@ -141,10 +144,16 @@ class _TypedOcrState extends State<TypedOcr> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Typed OCR"),
+        title: Text(
+          "Typed OCR",
+        ),
+        actions: [
+          BackButton(),
+        ],
       ),
+      drawer: NavDrawer(),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -219,26 +228,29 @@ class _TypedOcrState extends State<TypedOcr> {
                       },
                     ),
                   ),
-                  Row(
-                    children: [
-                      Spacer(),
-                      Container(
-                        child: isLoading
-                            ? const CircularProgressIndicator()
-                            : ElevatedButton(
-                                onPressed: sendImage,
-                                child: Text("Process"),
+                  SizedBox(
+                    height: 80,
+                    child: Center(
+                      child: isLoading
+                          ? SizedBox(
+                              height: 75,
+                              child: Lottie.asset(
+                                "assets/animations/waiting.json",
+                                frameRate: FrameRate(60),
                               ),
-                      ),
-                      Spacer(),
-                    ],
+                            )
+                          : FloatingActButton(
+                              text: "Process",
+                              func: sendImage,
+                            ),
+                    ),
                   ),
                 ],
               ),
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 0, 0),
+                padding: const EdgeInsets.fromLTRB(16, 0, 0, 16),
                 child: TextField(
                   controller: _otpTextController,
                   readOnly: true,

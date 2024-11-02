@@ -39,4 +39,4 @@ flutter:
         - asset: assets/fonts/Audiowide.ttf
   assets:
     - assets/images/
-    - assets/animations/waiting.json
+    - assets/animations/

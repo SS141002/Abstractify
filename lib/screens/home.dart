@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:abstractify/screens/summary.dart';
-import 'package:abstractify/screens/grammar.dart';
-import 'package:abstractify/screens/settings.dart';
-import 'package:abstractify/screens/aboutus.dart';
-import 'package:abstractify/screens/ocr.dart';
-import 'package:abstractify/models/squareoutlinedbutton.dart';
+import 'package:abstractify/models/floatingactbutton.dart';
+import 'package:abstractify/screens/navdrawer.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -30,100 +26,33 @@ class _HomeState extends State<Home> {
           ),
         ),
       ),
-      drawer: Drawer(
-        width: drawerWidth,
-        child: ListView(
-          padding: EdgeInsets.all(8),
-          children: <Widget>[
-            SizedBox(
-              height: 270,
-              child: DrawerHeader(
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 100,
-                      backgroundImage: AssetImage("assets/images/download.jpg"),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Text(
-                      "Abstractify",
-                      style: TextStyle(fontFamily: "Audiowide", fontSize: 20),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.home),
-              title: Text(" Home"),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.settings),
-              title: Text(" Setting"),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (ctx) => const Settings(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.groups),
-              title: Text(" About Us"),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (ctx) => const AboutUs(),
-                  ),
-                );
-              },
-            )
-          ],
-        ),
-      ),
+      drawer: NavDrawer(),
       body: Center(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            SquareOutlinedButton(
-              size: 150,
+            FloatingActButton(
               text: "Summarizer",
+              size: 200,
+              icn: Icon(Icons.summarize),
               func: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (ctx) => const Summary(),
-                  ),
-                );
+                Navigator.of(context).pushNamed('/summary');
               },
             ),
-            SquareOutlinedButton(
-              size: 150,
+            FloatingActButton(
               text: "Grammar Checker",
+              size: 200,
+              icn: Icon(Icons.spellcheck),
               func: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (ctx) => const Grammar(),
-                  ),
-                );
+                Navigator.of(context).pushNamed('/grammar');
               },
             ),
-            SquareOutlinedButton(
-              size: 150,
+            FloatingActButton(
               text: "OCR",
+              size: 200,
+              icn: Icon(Icons.text_snippet),
               func: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (ctx) => const Ocr(),
-                  ),
-                );
+                Navigator.of(context).pushNamed('/ocr');
               },
             ),
           ],

@@ -1,3 +1,4 @@
+import 'package:abstractify/screens/navdrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:abstractify/providers/settingsprovider.dart';
@@ -16,8 +17,14 @@ class _SettingsState extends ConsumerState<Settings> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Settings"),
+        title: const Text(
+          "Settings",
+        ),
+        actions: [
+          BackButton(),
+        ],
       ),
+      drawer: NavDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

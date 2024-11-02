@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:abstractify/screens/handocr.dart';
-import 'package:abstractify/screens/typedocr.dart';
-import 'package:abstractify/models/squareoutlinedbutton.dart';
+import 'package:abstractify/screens/navdrawer.dart';
+import 'package:abstractify/models/floatingactbutton.dart';
 
 class Ocr extends StatelessWidget {
   const Ocr({super.key});
@@ -10,35 +9,33 @@ class Ocr extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("OCR"),
+        title: const Text(
+          "OCR",
+        ),
+        actions: [
+          BackButton(),
+        ],
       ),
+      drawer: NavDrawer(),
       body: Padding(
         padding: EdgeInsets.all(16),
         child: Center(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              SquareOutlinedButton(
-                size: 150,
+              FloatingActButton(
                 text: "Typed",
                 func: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (ctx) => const TypedOcr(),
-                    ),
-                  );
+                  Navigator.of(context).pushNamed('/ocr/typed');
                 },
+                icn: Icon(Icons.keyboard),
               ),
-              SquareOutlinedButton(
-                size: 150,
+              FloatingActButton(
                 text: "Handwritten",
                 func: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (ctx) => const HandOcr(),
-                    ),
-                  );
+                  Navigator.of(context).pushNamed('/ocr/hand');
                 },
+                icn: Icon(Icons.draw),
               ),
             ],
           ),

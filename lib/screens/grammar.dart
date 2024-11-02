@@ -1,8 +1,10 @@
 import 'dart:async';
-
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:abstractify/screens/navdrawer.dart';
+import 'package:abstractify/models/floatingactbutton.dart';
+import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 
 class Grammar extends StatefulWidget {
   const Grammar({super.key});
@@ -99,10 +101,16 @@ class _GrammarState extends State<Grammar> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Grammar Checker"),
+        title: const Text(
+          "Grammar Checker",
+        ),
+        actions: [
+          BackButton(),
+        ],
       ),
+      drawer: NavDrawer(),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
         child: Row(
           children: [
             Expanded(
@@ -131,24 +139,30 @@ class _GrammarState extends State<Grammar> {
                         },
                       ),
                     ),
-                    const SizedBox(
-                      height: 30,
+                    SizedBox(
+                      height: 80,
+                      child: Center(
+                        child: isLoading
+                            ? SizedBox(
+                                height: 75,
+                                child: Lottie.asset(
+                                  "assets/animations/waiting.json",
+                                  frameRate: FrameRate(60),
+                                ),
+                              )
+                            : FloatingActButton(
+                                text: "Summarize",
+                                func: _submitForm,
+                              ),
+                      ),
                     ),
-                    Container(
-                      child: isLoading
-                          ? const CircularProgressIndicator()
-                          : ElevatedButton(
-                              onPressed: _submitForm,
-                              child: Text("Check"),
-                            ),
-                    )
                   ],
                 ),
               ),
             ),
             Expanded(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(16.0, 0, 0, 0),
+                padding: EdgeInsets.fromLTRB(16.0, 0, 0, 16),
                 child: TextField(
                   controller: _otpTextController,
                   readOnly: true,

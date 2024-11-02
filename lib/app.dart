@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:abstractify/screens/home.dart';
 import 'package:abstractify/providers/settingsprovider.dart';
+import 'package:abstractify/screens/home.dart';
+import 'package:abstractify/screens/aboutus.dart';
+import 'package:abstractify/screens/grammar.dart';
+import 'package:abstractify/screens/handocr.dart';
+import 'package:abstractify/screens/ocr.dart';
+import 'package:abstractify/screens/settings.dart';
+import 'package:abstractify/screens/summary.dart';
+import 'package:abstractify/screens/typedocr.dart';
 
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
@@ -11,6 +18,7 @@ class MyApp extends ConsumerWidget {
     final selectedValue = ref.watch(selectedMode);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      themeMode: selectedValue,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
@@ -27,8 +35,17 @@ class MyApp extends ConsumerWidget {
         ),
         fontFamily: 'NotoSans',
       ),
-      themeMode: selectedValue,
-      home: const Home(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => Home(),
+        '/summary': (context) => Summary(),
+        '/grammar': (context) => Grammar(),
+        '/ocr': (context) => Ocr(),
+        '/ocr/typed': (context) => TypedOcr(),
+        '/ocr/hand': (context) => HandOcr(),
+        '/setting': (context) => Settings(),
+        '/aboutus': (context) => AboutUs(),
+      },
     );
   }
 }

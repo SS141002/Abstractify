@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:abstractify/models/aboutcard.dart';
+import 'package:abstractify/screens/navdrawer.dart';
 
 class AboutUs extends StatelessWidget {
   const AboutUs({super.key});
@@ -11,7 +12,11 @@ class AboutUs extends StatelessWidget {
         title: Text(
           "About Us",
         ),
+        actions: [
+          BackButton(),
+        ],
       ),
+      drawer: NavDrawer(),
       body: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -48,7 +53,7 @@ class AboutUs extends StatelessWidget {
                   link: "https://www.linkedin.com/in/rachit-soni-b7764b297",
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),

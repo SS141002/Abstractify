@@ -1,7 +1,9 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:abstractify/models/floatingactbutton.dart';
+import 'package:abstractify/screens/navdrawer.dart';
+import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 
 class Summary extends StatefulWidget {
@@ -115,10 +117,16 @@ class _SummaryState extends State<Summary> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Summarizer"),
+        title: const Text(
+          "Summarizer",
+        ),
+        actions: [
+          BackButton(),
+        ],
       ),
+      drawer: NavDrawer(),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
         child: Form(
           key: _formkey,
           child: Row(
@@ -228,31 +236,29 @@ class _SummaryState extends State<Summary> {
                         },
                       ),
                     ),
-                    const SizedBox(
-                      height: 20,
+                    SizedBox(
+                      height: 80,
+                      child: Center(
+                        child: isLoading
+                            ? SizedBox(
+                                height: 75,
+                                child: Lottie.asset(
+                                  "assets/animations/waiting.json",
+                                  frameRate: FrameRate(60),
+                                ),
+                              )
+                            : FloatingActButton(
+                                text: "Summarize",
+                                func: _submitForm,
+                              ),
+                      ),
                     ),
-                    Container(
-                      child: isLoading
-                          ? SizedBox(
-                              height: 40,
-                              child: Lottie.asset(
-                                "assets/animations/waiting.json",
-                                frameRate: FrameRate(60),
-                              ),
-                            )
-                          : ElevatedButton(
-                              onPressed: _submitForm,
-                              child: Text(
-                                "Summarize",
-                              ),
-                            ),
-                    )
                   ],
                 ),
               ),
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
+                  padding: EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 16.0),
                   child: TextField(
                     controller: _otpTextController,
                     readOnly: true,
