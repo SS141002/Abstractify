@@ -17,6 +17,7 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedValue = ref.watch(selectedMode);
     return MaterialApp(
+      restorationScopeId: 'app',
       debugShowCheckedModeBanner: false,
       themeMode: selectedValue,
       theme: ThemeData(

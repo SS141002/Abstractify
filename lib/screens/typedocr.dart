@@ -71,7 +71,7 @@ class _TypedOcrState extends State<TypedOcr> {
   }
 
   Future<void> sendImage() async {
-    final String url = "http://127.0.0.1:$port/ocrtyped";
+    final String url = "http://127.0.0.1:$port/ocr/typed";
 
     if (_imageFile != null) {
       if (_selectedlanguageCodes.isNotEmpty) {

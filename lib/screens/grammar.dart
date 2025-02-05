@@ -151,7 +151,7 @@ class _GrammarState extends State<Grammar> {
                                 ),
                               )
                             : FloatingActButton(
-                                text: "Summarize",
+                                text: "Check",
                                 func: _submitForm,
                               ),
                       ),

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
+import 'package:abstractify/screens/imagepreview.dart';
 import 'package:flutter/material.dart';
 import 'package:abstractify/screens/navdrawer.dart';
 import 'package:abstractify/models/floatingactbutton.dart';
@@ -36,10 +37,12 @@ class _HandOcrState extends State<HandOcr> {
   bool minThresValid = true;
   bool minWhiteValid = true;
   bool maxWhiteValid = true;
+  bool isLoading = false;
 
   File? _imageFile;
-  bool isLoading = false;
-  var response = "";
+  String response = "";
+  String image1 = "";
+  String image2 = "";
 
   int port = 5000;
   int? imgWidth, imgHeight;
@@ -72,7 +75,7 @@ class _HandOcrState extends State<HandOcr> {
   }
 
   Future<void> sendPostReq() async {
-    final String url = "http://127.0.0.1:$port/ocrhand";
+    final String url = "http://127.0.0.1:$port/ocr/hand";
 
     var uri = Uri.parse(url);
     var request = http.MultipartRequest('POST', uri);
@@ -96,7 +99,7 @@ class _HandOcrState extends State<HandOcr> {
       });
       final res = await request.send().timeout(
         Duration(
-          seconds: 60,
+          seconds: 120,
         ),
         onTimeout: () {
           throw TimeoutException("The request timed out..");
@@ -111,6 +114,8 @@ class _HandOcrState extends State<HandOcr> {
       if (res.statusCode == 200) {
         Map<String, dynamic> body = jsonDecode(resBody);
         response = body['text'];
+        image1 = body['image1'];
+        image2 = body['image2'];
       } else {
         response = "failed to upload : ${res.statusCode}";
       }
@@ -568,6 +573,24 @@ class _HandOcrState extends State<HandOcr> {
                       ],
                     ),
                     Expanded(child: SizedBox()),
+                    Center(
+                      child: TextButton(
+                        onPressed: isLoading
+                            ? null
+                            : () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (ctx) => ImagePreview(
+                                        image1: image1, image2: image2),
+                                  ),
+                                );
+                              },
+                        child: Text("Preview Image"),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
                     SizedBox(
                       height: 80,
                       child: Center(
