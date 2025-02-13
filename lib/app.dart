@@ -15,15 +15,22 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedValue = ref.watch(selectedMode);
+    final themeMode = ref.watch(selectedMode);
+
     return MaterialApp(
       restorationScopeId: 'app',
       debugShowCheckedModeBanner: false,
-      themeMode: selectedValue,
+      themeMode: themeMode,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 163, 177, 138),
+          seedColor: const Color(0xFF3B82F6), // Blue-500
+          primary: const Color(0xFF3B82F6), // Blue-500
+          secondary: const Color(0xFF6366F1), // Indigo-500
+          surface: const Color(0xFFFFFFFF), // White
+          onPrimary: Colors.white,
+          onSecondary: Colors.white,
+          onSurface: const Color(0xFF374151), // Gray-700
           brightness: Brightness.light,
         ),
         fontFamily: 'NotoSans',
@@ -31,7 +38,13 @@ class MyApp extends ConsumerWidget {
       darkTheme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 92, 78, 117),
+          seedColor: const Color(0xFF3B82F6), // Blue-500
+          primary: const Color(0xFF3B82F6), // Blue-500
+          secondary: const Color(0xFF6366F1), // Indigo-500
+          surface: const Color(0xFF374151), // Gray-700
+          onPrimary: Colors.white,
+          onSecondary: Colors.white,
+          onSurface: const Color(0xFFD1D5DB), // Gray-300
           brightness: Brightness.dark,
         ),
         fontFamily: 'NotoSans',
