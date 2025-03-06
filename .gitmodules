@@ -1,0 +1,3 @@
+[submodule "assets/backend"]
+	path = assets/backend
+	url = https://github.com/SS141002/Abstractify-Backend.git
