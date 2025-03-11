@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:abstractify/models/floatingactbutton.dart';
 import 'package:abstractify/screens/navdrawer.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 
@@ -21,90 +22,116 @@ class _SummaryState extends State<Summary> {
   final _textController = TextEditingController();
   final _otpTextController = TextEditingController();
 
-  String? text;
   String? response;
-
   int? minLength;
   int? maxLength;
   int port = 5000;
-
   bool minLengthValid = true;
   bool maxLengthValid = true;
   bool isLoading = false;
 
+  // Variables for file picker and summarization mode
+  PlatformFile? pickedFile;
+  String? selectedFileName;
+  String selectedMode = 'Extractive'; // Default summarization mode
+
   @override
   void dispose() {
-    super.dispose();
     _minLengthController.dispose();
     _maxLengthController.dispose();
     _textController.dispose();
     _otpTextController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['txt', 'pdf', 'doc', 'docx'],
+      withData: true, // to get bytes directly
+    );
+    if (result != null && result.files.isNotEmpty) {
+      setState(() {
+        pickedFile = result.files.single;
+        selectedFileName = pickedFile!.name;
+      });
+    }
   }
 
   Future<void> sendPostReq() async {
     final String url = "http://127.0.0.1:$port/summary";
-
-    Map<String, dynamic> body = {
-      'min': minLength,
-      'max': maxLength,
-      'text': text,
-    };
-
+    http.Response res;
     try {
       setState(() {
         isLoading = true;
       });
-
-      final res = await http
-          .post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(body),
-      )
-          .timeout(
-        Duration(
-          seconds: 15,
-        ),
-        onTimeout: () {
-          throw TimeoutException("The request timed out..");
-        },
-      );
-
-      setState(() {
-        isLoading = false;
-      });
-
+      // If a file is selected, send a multipart request
+      if (pickedFile != null) {
+        var request = http.MultipartRequest('POST', Uri.parse(url));
+        request.fields['min'] = minLength.toString();
+        request.fields['max'] = maxLength.toString();
+        request.fields['mode'] = selectedMode;
+        // Add the file using its bytes and secure filename
+        request.files.add(http.MultipartFile.fromBytes(
+          'file',
+          pickedFile!.bytes!,
+          filename: pickedFile!.name,
+        ));
+        var streamedResponse = await request.send().timeout(
+          Duration(seconds: 15),
+          onTimeout: () {
+            throw TimeoutException("The request timed out.");
+          },
+        );
+        res = await http.Response.fromStream(streamedResponse);
+      } else {
+        // Otherwise, send JSON payload with text from the input field
+        Map<String, dynamic> body = {
+          'min': minLength,
+          'max': maxLength,
+          'mode': selectedMode,
+          'text': _textController.text,
+        };
+        res = await http
+            .post(
+          Uri.parse(url),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(body),
+        )
+            .timeout(
+          Duration(seconds: 15),
+          onTimeout: () {
+            throw TimeoutException("The request timed out.");
+          },
+        );
+      }
       if (res.statusCode == 200) {
         Map<String, dynamic> mp = jsonDecode(res.body);
         response = mp['summary']!;
       } else {
-        response = 'Failed to send data. Error : ${res.statusCode}';
+        response = 'Failed to send data. Error: ${res.statusCode}';
       }
     } on TimeoutException catch (_) {
-      isLoading = false;
       response = "The request timed out.";
     } catch (e) {
-      response = 'Error $e';
+      response = 'Error: $e';
     } finally {
       _otpTextController.text = response ?? "";
+      setState(() {
+        isLoading = false;
+      });
     }
-
-    setState(() {
-      isLoading = false;
-    });
   }
 
   void _submitForm() {
     if (_formkey.currentState!.validate()) {
       minLength = int.tryParse(_minLengthController.text);
       maxLength = int.tryParse(_maxLengthController.text);
-      text = _textController.text;
 
       if (minLength! > maxLength!) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("min length cannot be greater than max length"),
-          ),
+              content: Text("Min length cannot be greater than max length")),
         );
         return;
       }
@@ -117,12 +144,8 @@ class _SummaryState extends State<Summary> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Summarizer",
-        ),
-        actions: [
-          BackButton(),
-        ],
+        title: const Text("Summarizer"),
+        actions: [BackButton()],
       ),
       drawer: NavDrawer(),
       body: Padding(
@@ -131,12 +154,27 @@ class _SummaryState extends State<Summary> {
           key: _formkey,
           child: Row(
             children: [
+              // Left side: Input area
               Expanded(
                 child: Column(
-                  mainAxisSize: MainAxisSize.max,
                   children: [
                     Row(
-                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        ElevatedButton(
+                          onPressed: _pickFile,
+                          child: Text('Choose File'),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            selectedFileName ?? 'No file selected',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Expanded(
@@ -147,75 +185,92 @@ class _SummaryState extends State<Summary> {
                               labelText: "Min Length (Integer)",
                               errorText: minLengthValid
                                   ? null
-                                  : "Please enter a integer",
+                                  : "Please enter an integer",
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return "Please enter a minimum length";
+                                return "Enter a minimum length";
                               }
                               if (int.tryParse(value) == null) {
-                                return "please enter valid number";
-                              } else {
-                                int num = int.parse(value);
-                                if (num < 5) {
-                                  return "it should be > 5";
-                                }
+                                return "Enter a valid number";
+                              }
+                              int num = int.parse(value);
+                              if (num < 5) {
+                                return "It should be > 5";
                               }
                               return null;
                             },
-                            onChanged: (String val) {
-                              final v = int.tryParse(val);
-
-                              if (v == null) {
-                                setState(() => minLengthValid = false);
-                              } else {
-                                setState(() => minLengthValid = true);
-                              }
+                            onChanged: (val) {
+                              setState(() {
+                                minLengthValid = int.tryParse(val) != null;
+                              });
                             },
                           ),
                         ),
-                        const SizedBox(
-                          width: 30,
-                        ),
+                        const SizedBox(width: 30),
                         Expanded(
                           child: TextFormField(
                             controller: _maxLengthController,
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
-                                labelText: "Max Length (Integer)",
-                                errorText: maxLengthValid
-                                    ? null
-                                    : "Please enter a integer"),
+                              labelText: "Max Length (Integer)",
+                              errorText: maxLengthValid
+                                  ? null
+                                  : "Please enter an integer",
+                            ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return "Please enter a maximum length";
+                                return "Enter a maximum length";
                               }
                               if (int.tryParse(value) == null) {
-                                return "please enter valid number";
-                              } else {
-                                int num = int.parse(value);
-                                if (num > 250) {
-                                  return "it should be < 250";
-                                }
+                                return "Enter a valid number";
+                              }
+                              int num = int.parse(value);
+                              if (num > 250) {
+                                return "It should be < 250";
                               }
                               return null;
                             },
-                            onChanged: (String val) {
-                              final v = int.tryParse(val);
-
-                              if (v == null) {
-                                setState(() => maxLengthValid = false);
-                              } else {
-                                setState(() => maxLengthValid = true);
-                              }
+                            onChanged: (val) {
+                              setState(() {
+                                maxLengthValid = int.tryParse(val) != null;
+                              });
                             },
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(
-                      height: 20,
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Text(
+                          'Summarization Mode:',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(width: 10),
+                        DropdownButton<String>(
+                          value: selectedMode,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              selectedMode = newValue!;
+                            });
+                          },
+                          items: <String>[
+                            'Extractive',
+                            'Abstractive',
+                            'Bullet Points'
+                          ].map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 16),
+                    // Text input for summary if no file is chosen
                     Expanded(
                       child: TextFormField(
                         controller: _textController,
@@ -223,14 +278,14 @@ class _SummaryState extends State<Summary> {
                         maxLines: null,
                         minLines: null,
                         decoration: const InputDecoration(
-                          hintText: "Enter your text here",
+                          hintText:
+                          "Enter your text here (or choose a file above)",
                           border: OutlineInputBorder(),
                         ),
                         validator: (value) {
-                          if (value == null ||
-                              value.isEmpty ||
-                              value.trim().isEmpty) {
-                            return "Enter Text to summarize";
+                          if (pickedFile == null &&
+                              (value == null || value.trim().isEmpty)) {
+                            return "Enter text to summarize or choose a file";
                           }
                           return null;
                         },
@@ -241,24 +296,25 @@ class _SummaryState extends State<Summary> {
                       child: Center(
                         child: isLoading
                             ? SizedBox(
-                                height: 75,
-                                child: Lottie.asset(
-                                  "assets/animations/waiting.json",
-                                  frameRate: FrameRate(60),
-                                ),
-                              )
+                          height: 75,
+                          child: Lottie.asset(
+                            "assets/animations/waiting.json",
+                            frameRate: FrameRate(60),
+                          ),
+                        )
                             : FloatingActButton(
-                                text: "Summarize",
-                                func: _submitForm,
-                              ),
+                          text: "Summarize",
+                          func: _submitForm,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
+              // Right side: Display summary result
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 16.0),
+                  padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
                   child: TextField(
                     controller: _otpTextController,
                     readOnly: true,
@@ -270,7 +326,7 @@ class _SummaryState extends State<Summary> {
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),

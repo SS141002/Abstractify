@@ -77,8 +77,7 @@ class _HandOcrState extends State<HandOcr> {
   Future<void> sendPostReq() async {
     final String url = "http://127.0.0.1:$port/ocr/hand";
 
-    var uri = Uri.parse(url);
-    var request = http.MultipartRequest('POST', uri);
+    var request = http.MultipartRequest('POST', Uri.parse(url));
 
     request.files.add(
       await http.MultipartFile.fromPath('image', _imageFile!.path),
