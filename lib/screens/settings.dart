@@ -13,77 +13,103 @@ class Settings extends ConsumerStatefulWidget {
 class _SettingsState extends ConsumerState<Settings> {
   @override
   Widget build(BuildContext context) {
-    var themeMode = ref.watch(selectedMode);
+    final themeMode = ref.watch(selectedMode);
+    final colorBlindMode = ref.watch(colorBlindModeProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("Settings"),
-        actions: [
-          BackButton(),
-        ],
+        actions: const [BackButton()],
       ),
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisSize: MainAxisSize.max,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                const SizedBox(width: 100),
-                Text(
-                  "App Theme",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(width: 100),
-                SizedBox(
-                  width: 160,
-                  child: DropdownButton<ThemeMode>(
-                    value: themeMode,
-                    isExpanded: true,
-                    icon: themeMode == ThemeMode.light
-                        ? Icon(Icons.light_mode)
-                        : Icon(Icons.dark_mode),
-                    underline: const SizedBox(),
-                    items: const [
-                      DropdownMenuItem(
-                        value: ThemeMode.system,
-                        child: Padding(
-                          padding: EdgeInsets.all(8),
-                          child: Text("System Default"),
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: ThemeMode.light,
-                        child: Padding(
-                          padding: EdgeInsets.all(8),
-                          child: Text("Light Theme"),
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: ThemeMode.dark,
-                        child: Padding(
-                          padding: EdgeInsets.all(8),
-                          child: Text("Dark Theme"),
-                        ),
-                      ),
-                    ],
-                    onChanged: (ThemeMode? newMode) {
-                      if (newMode != null) {
-                        ref.read(selectedMode.notifier).setTheme(newMode);
-                        setState(() {
-                          themeMode = newMode;
-                        });
-                      }
-                    },
-                  ),
-                )
-              ],
-            )
+            _buildThemeSelector(themeMode),
+            const SizedBox(height: 30),
+            _buildColorBlindSelector(colorBlindMode),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildThemeSelector(ThemeMode themeMode) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text("App Theme", style: TextStyle(fontSize: 18)),
+        SizedBox(
+          width: 200,
+          child: DropdownButton<ThemeMode>(
+            value: themeMode,
+            isExpanded: true,
+            items: const [
+              DropdownMenuItem(
+                value: ThemeMode.system,
+                child: Text("System Default"),
+              ),
+              DropdownMenuItem(
+                value: ThemeMode.light,
+                child: Text("Light Theme"),
+              ),
+              DropdownMenuItem(
+                value: ThemeMode.dark,
+                child: Text("Dark Theme"),
+              ),
+            ],
+            onChanged: (mode) {
+              if (mode != null) {
+                ref.read(selectedMode.notifier).setTheme(mode);
+              }
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildColorBlindSelector(ColorBlindMode currentMode) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text("Color Accessibility", style: TextStyle(fontSize: 18)),
+        SizedBox(
+          width: 200,
+          child: DropdownButton<ColorBlindMode>(
+            value: currentMode,
+            isExpanded: true,
+            items: const [
+              DropdownMenuItem(
+                value: ColorBlindMode.none,
+                child: Text("None"),
+              ),
+              DropdownMenuItem(
+                value: ColorBlindMode.protanopia,
+                child: Text("Protanopia"),
+              ),
+              DropdownMenuItem(
+                value: ColorBlindMode.deuteranopia,
+                child: Text("Deuteranopia"),
+              ),
+              DropdownMenuItem(
+                value: ColorBlindMode.tritanopia,
+                child: Text("Tritanopia"),
+              ),
+              DropdownMenuItem(
+                value: ColorBlindMode.monochromacy,
+                child: Text("Monochromacy"),
+              ),
+            ],
+            onChanged: (mode) {
+              if (mode != null) {
+                ref.read(colorBlindModeProvider.notifier).setColorBlindMode(mode);
+              }
+            },
+          ),
+        ),
+      ],
     );
   }
 }
