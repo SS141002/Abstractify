@@ -13,7 +13,7 @@ class Settings extends ConsumerStatefulWidget {
 class _SettingsState extends ConsumerState<Settings> {
   @override
   Widget build(BuildContext context) {
-    final themeMode = ref.watch(selectedMode);
+    final themeMode = ref.watch(themeModeProvider);
     final colorBlindMode = ref.watch(colorBlindModeProvider);
 
     return Scaffold(
@@ -61,7 +61,7 @@ class _SettingsState extends ConsumerState<Settings> {
             ],
             onChanged: (mode) {
               if (mode != null) {
-                ref.read(selectedMode.notifier).setTheme(mode);
+                ref.read(themeModeProvider.notifier).setTheme(mode);
               }
             },
           ),

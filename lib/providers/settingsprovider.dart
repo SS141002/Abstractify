@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum ColorBlindMode { none, protanopia, deuteranopia, tritanopia, monochromacy }
 
-final selectedMode = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
+final themeModeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
   return ThemeNotifier();
 });
 
@@ -20,35 +20,16 @@ class ThemeNotifier extends StateNotifier<ThemeMode> {
   Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
     final themeString = prefs.getString('themeMode') ?? 'system';
-    state = _getThemeModeFromString(themeString);
+    state = ThemeMode.values.firstWhere(
+          (e) => e.name == themeString,
+      orElse: () => ThemeMode.system,
+    );
   }
 
   Future<void> setTheme(ThemeMode mode) async {
     state = mode;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('themeMode', _getStringFromThemeMode(mode));
-  }
-
-  ThemeMode _getThemeModeFromString(String value) {
-    switch (value) {
-      case 'light':
-        return ThemeMode.light;
-      case 'dark':
-        return ThemeMode.dark;
-      default:
-        return ThemeMode.system;
-    }
-  }
-
-  String _getStringFromThemeMode(ThemeMode mode) {
-    switch (mode) {
-      case ThemeMode.light:
-        return 'light';
-      case ThemeMode.dark:
-        return 'dark';
-      default:
-        return 'system';
-    }
+    await prefs.setString('themeMode', mode.name);
   }
 }
 
@@ -61,7 +42,7 @@ class ColorBlindNotifier extends StateNotifier<ColorBlindMode> {
     final prefs = await SharedPreferences.getInstance();
     final modeString = prefs.getString('colorBlindMode') ?? 'none';
     state = ColorBlindMode.values.firstWhere(
-          (e) => e.toString().split('.').last == modeString,
+          (e) => e.name == modeString,
       orElse: () => ColorBlindMode.none,
     );
   }
@@ -69,6 +50,6 @@ class ColorBlindNotifier extends StateNotifier<ColorBlindMode> {
   Future<void> setColorBlindMode(ColorBlindMode mode) async {
     state = mode;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('colorBlindMode', mode.toString().split('.').last);
+    await prefs.setString('colorBlindMode', mode.name);
   }
 }
