@@ -30,10 +30,12 @@ class _SummaryState extends State<Summary> {
   bool maxLengthValid = true;
   bool isLoading = false;
 
-  // Variables for file picker and summarization mode
   PlatformFile? pickedFile;
   String? selectedFileName;
   String selectedMode = 'Extractive'; // Default summarization mode
+
+  double _submitButtonScale = 1.0;
+  double _fileButtonScale = 1.0;
 
   @override
   void dispose() {
@@ -48,7 +50,7 @@ class _SummaryState extends State<Summary> {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['txt', 'pdf', 'doc', 'docx'],
-      withData: true, // to get bytes directly
+      withData: true,
     );
     if (result != null && result.files.isNotEmpty) {
       setState(() {
@@ -65,13 +67,12 @@ class _SummaryState extends State<Summary> {
       setState(() {
         isLoading = true;
       });
-      // If a file is selected, send a multipart request
+
       if (pickedFile != null) {
         var request = http.MultipartRequest('POST', Uri.parse(url));
         request.fields['min'] = minLength.toString();
         request.fields['max'] = maxLength.toString();
         request.fields['mode'] = selectedMode;
-        // Add the file using its bytes and secure filename
         request.files.add(http.MultipartFile.fromBytes(
           'file',
           pickedFile!.bytes!,
@@ -85,7 +86,6 @@ class _SummaryState extends State<Summary> {
         );
         res = await http.Response.fromStream(streamedResponse);
       } else {
-        // Otherwise, send JSON payload with text from the input field
         Map<String, dynamic> body = {
           'min': minLength,
           'max': maxLength,
@@ -130,8 +130,7 @@ class _SummaryState extends State<Summary> {
 
       if (minLength! > maxLength!) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text("Min length cannot be greater than max length")),
+          SnackBar(content: Text("Min length cannot be greater than max length")),
         );
         return;
       }
@@ -154,15 +153,22 @@ class _SummaryState extends State<Summary> {
           key: _formkey,
           child: Row(
             children: [
-              // Left side: Input area
               Expanded(
                 child: Column(
                   children: [
                     Row(
                       children: [
-                        ElevatedButton(
-                          onPressed: _pickFile,
-                          child: Text('Choose File'),
+                        MouseRegion(
+                          onEnter: (_) => setState(() => _fileButtonScale = 1.1),
+                          onExit: (_) => setState(() => _fileButtonScale = 1.0),
+                          child: AnimatedContainer(
+                            duration: Duration(milliseconds: 200),
+                            transform: Matrix4.identity()..scale(_fileButtonScale),
+                            child: ElevatedButton(
+                              onPressed: _pickFile,
+                              child: Text('Choose File'),
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -175,78 +181,10 @@ class _SummaryState extends State<Summary> {
                     ),
                     const SizedBox(height: 16),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _minLengthController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: "Min Length (Integer)",
-                              errorText: minLengthValid
-                                  ? null
-                                  : "Please enter an integer",
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return "Enter a minimum length";
-                              }
-                              if (int.tryParse(value) == null) {
-                                return "Enter a valid number";
-                              }
-                              int num = int.parse(value);
-                              if (num < 5) {
-                                return "It should be > 5";
-                              }
-                              return null;
-                            },
-                            onChanged: (val) {
-                              setState(() {
-                                minLengthValid = int.tryParse(val) != null;
-                              });
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 30),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _maxLengthController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: "Max Length (Integer)",
-                              errorText: maxLengthValid
-                                  ? null
-                                  : "Please enter an integer",
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return "Enter a maximum length";
-                              }
-                              if (int.tryParse(value) == null) {
-                                return "Enter a valid number";
-                              }
-                              int num = int.parse(value);
-                              if (num > 250) {
-                                return "It should be < 250";
-                              }
-                              return null;
-                            },
-                            onChanged: (val) {
-                              setState(() {
-                                maxLengthValid = int.tryParse(val) != null;
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
                       children: [
                         Text(
                           'Summarization Mode:',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(width: 10),
                         DropdownButton<String>(
@@ -256,11 +194,8 @@ class _SummaryState extends State<Summary> {
                               selectedMode = newValue!;
                             });
                           },
-                          items: <String>[
-                            'Extractive',
-                            'Abstractive',
-                            'Bullet Points'
-                          ].map<DropdownMenuItem<String>>((String value) {
+                          items: <String>['Extractive', 'Abstractive', 'Bullet Points']
+                              .map<DropdownMenuItem<String>>((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
                               child: Text(value),
@@ -270,7 +205,6 @@ class _SummaryState extends State<Summary> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    // Text input for summary if no file is chosen
                     Expanded(
                       child: TextFormField(
                         controller: _textController,
@@ -278,13 +212,11 @@ class _SummaryState extends State<Summary> {
                         maxLines: null,
                         minLines: null,
                         decoration: const InputDecoration(
-                          hintText:
-                          "Enter your text here (or choose a file above)",
+                          hintText: "Enter your text here (or choose a file above)",
                           border: OutlineInputBorder(),
                         ),
                         validator: (value) {
-                          if (pickedFile == null &&
-                              (value == null || value.trim().isEmpty)) {
+                          if (pickedFile == null && (value == null || value.trim().isEmpty)) {
                             return "Enter text to summarize or choose a file";
                           }
                           return null;
@@ -302,16 +234,23 @@ class _SummaryState extends State<Summary> {
                             frameRate: FrameRate(60),
                           ),
                         )
-                            : FloatingActButton(
-                          text: "Summarize",
-                          func: _submitForm,
+                            : MouseRegion(
+                          onEnter: (_) => setState(() => _submitButtonScale = 1.1),
+                          onExit: (_) => setState(() => _submitButtonScale = 1.0),
+                          child: AnimatedContainer(
+                            duration: Duration(milliseconds: 200),
+                            transform: Matrix4.identity()..scale(_submitButtonScale),
+                            child: FloatingActButton(
+                              text: "Summarize",
+                              func: _submitForm,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              // Right side: Display summary result
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),

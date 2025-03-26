@@ -33,21 +33,18 @@ class Home extends StatelessWidget {
               FeatureCard(
                 title: "Summarizer",
                 imagePath: "assets/images/summarizer.png",
-             //  icon: Icons.summarize,
                 route: '/summary',
               ),
               SizedBox(height: 20),
               FeatureCard(
                 title: "Grammar Checker",
                 imagePath: "assets/images/grammar.png",
-               // icon: Icons.spellcheck,
                 route: '/grammar',
               ),
               SizedBox(height: 20),
               FeatureCard(
                 title: "OCR",
                 imagePath: "assets/images/ocr.png",
-                //icon: Icons.text_snippet,
                 route: '/ocr',
               ),
             ],
@@ -61,14 +58,12 @@ class Home extends StatelessWidget {
 class FeatureCard extends StatefulWidget {
   final String title;
   final String imagePath;
-  //final IconData icon;
   final String route;
 
   const FeatureCard({
     Key? key,
     required this.title,
     required this.imagePath,
-    //required this.icon,
     required this.route,
   }) : super(key: key);
 
@@ -77,8 +72,8 @@ class FeatureCard extends StatefulWidget {
 }
 
 class _FeatureCardState extends State<FeatureCard> {
-  double _scale = 1.0;
-  Color _cardColor = Colors.white; // Default color
+  double _scale = 1.0; // Default scale
+  Color _cardColor = Colors.white; // Default card color
 
   void _onTapDown(TapDownDetails details) {
     setState(() {
@@ -90,6 +85,7 @@ class _FeatureCardState extends State<FeatureCard> {
     setState(() {
       _scale = 1.0; // Restore size after tap
     });
+
     Future.delayed(Duration(milliseconds: 50), () {
       Navigator.of(context).pushNamed(widget.route);
     });
@@ -97,7 +93,7 @@ class _FeatureCardState extends State<FeatureCard> {
 
   void _onHover(bool hovering) {
     setState(() {
-      _scale = hovering ? 1.05 : 1.0; // Grow effect on hover
+      _scale = hovering ? 1.1 : 1.0; // Grow effect from center
       _cardColor = hovering ? Colors.deepPurple.withOpacity(0.2) : Colors.white; // Change color
     });
   }
@@ -111,11 +107,19 @@ class _FeatureCardState extends State<FeatureCard> {
         onTapDown: _onTapDown,
         onTapUp: _onTapUp,
         child: AnimatedContainer(
-          duration: Duration(milliseconds: 150),
-          transform: Matrix4.identity()..scale(_scale),
+          duration: Duration(milliseconds: 200),
+          transform: Matrix4.diagonal3Values(_scale, _scale, 1), // Grows from center
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            color: _cardColor,
+            color: _cardColor, // Dynamic background color
+            boxShadow: [
+              if (_scale > 1.0) // Only apply shadow when hovered
+                BoxShadow(
+                  color: Colors.deepPurple.withOpacity(0.3),
+                  blurRadius: 15,
+                  spreadRadius: 3,
+                ),
+            ],
           ),
           child: Card(
             elevation: 8,
@@ -127,9 +131,7 @@ class _FeatureCardState extends State<FeatureCard> {
               padding: EdgeInsets.all(16),
               child: Column(
                 children: [
-                  Image.asset(widget.imagePath, height: 80),
-                  SizedBox(height: 10),
-                 // Icon(widget.icon, size: 40, color: Colors.deepPurple),
+                  Image.asset(widget.imagePath, height: 80), // Feature image
                   SizedBox(height: 10),
                   Text(
                     widget.title,
