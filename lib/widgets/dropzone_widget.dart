@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
+import 'package:abstractify/widgets/imagepreview.dart';
 import 'package:file_picker/file_picker.dart';
 
 class DropZoneWidget extends StatefulWidget {
@@ -68,7 +69,7 @@ class _DropZoneWidgetState extends State<DropZoneWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 180,
+      height: 200,
       padding: const EdgeInsets.all(12),
       child: DropTarget(
         onDragEntered: (details) {
@@ -82,77 +83,75 @@ class _DropZoneWidgetState extends State<DropZoneWidget> {
             selectedFiles.addAll(details.files.map((file) => file.path));
             isHighlighted = false;
           });
-          widget.onFilesChanged(selectedFiles.toList()); // <-- ADD THIS
+          widget.onFilesChanged(selectedFiles.toList()); // update parent
         },
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: isHighlighted ? Colors.blue : Colors.grey,
+        child: GestureDetector(
+          onTap: _selectFiles,
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: isHighlighted ? Colors.blue : Colors.grey,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.white,
             ),
-            borderRadius: BorderRadius.circular(12),
-            color: Colors.white,
-          ),
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.cloud_upload,
-                        size: 50, color: Colors.grey),
-                    const SizedBox(height: 8),
-                    selectedFiles.isEmpty
-                        ? const Text(
-                            "Drop images here or use buttons to select",
-                            style: TextStyle(fontSize: 14),
-                          )
-                        : Text(
-                            "${selectedFiles.length} file(s) selected",
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.cloud_upload,
+                          size: 50, color: Colors.grey),
+                      const SizedBox(height: 8),
+                      selectedFiles.isEmpty
+                          ? const Text(
+                              "Drop images here or click to select",
+                              style: TextStyle(fontSize: 14),
+                            )
+                          : Text(
+                              "${selectedFiles.length} file(s) selected",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      tooltip: "Select Folder",
+                      icon: const Icon(Icons.folder_open),
+                      onPressed: _selectFolder,
+                    ),
+                    IconButton(
+                      tooltip: "Preview Images",
+                      icon: const Icon(Icons.image),
+                      onPressed: selectedFiles.isEmpty
+                          ? null
+                          : () {
+                              showDialog(
+                                context: context,
+                                builder: (_) => ImagePreviewModal(
+                                  imagePaths: selectedFiles.toList(),
+                                ),
+                              );
+                            },
+                    ),
+                    IconButton(
+                      tooltip: "Clear Selection",
+                      icon: const Icon(Icons.clear),
+                      onPressed: _clearSelection,
+                    ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: _selectFiles,
-                    icon: const Icon(Icons.insert_drive_file),
-                    label: const Text("Select Files"),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  ElevatedButton.icon(
-                    onPressed: _selectFolder,
-                    icon: const Icon(Icons.folder_open),
-                    label: const Text("Select Folder"),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  OutlinedButton.icon(
-                    onPressed: _clearSelection,
-                    icon: const Icon(Icons.clear),
-                    label: const Text("Clear"),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

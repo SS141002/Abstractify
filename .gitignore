@@ -51,3 +51,4 @@ app.*.map.json
 /windows/
 /web/
 /lib.zip
+/devtools_options.yaml

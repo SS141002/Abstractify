@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
-import 'package:abstractify/widgets/imagepreview.dart';
 import 'package:flutter/material.dart';
 import 'package:abstractify/screens/navdrawer.dart';
 import 'package:abstractify/widgets/floatingactbutton.dart';
@@ -10,6 +9,7 @@ import 'package:lottie/lottie.dart';
 import 'package:abstractify/widgets/dropzone_widget.dart';
 
 enum MethodDt { dilated, lineDetection }
+enum PageType { ruled, plain }
 
 class HandOcr extends StatefulWidget {
   const HandOcr({super.key});
@@ -179,21 +179,6 @@ class _HandOcrState extends State<HandOcr> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     DropZoneWidget(onFilesChanged: updateFiles),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: selectedFiles.isEmpty
-                          ? null // Disable if no images
-                          : () {
-                        showDialog(
-                          context: context,
-                          builder: (_) => ImagePreviewModal(imagePaths: selectedFiles.toList()),
-                        );
-                            },
-                      icon: const Icon(Icons.image),
-                      label: const Text("Image Preview"),
-                    ),
                     const SizedBox(
                       height: 15,
                     ),
