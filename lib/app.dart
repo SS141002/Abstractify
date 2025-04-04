@@ -4,11 +4,9 @@ import 'package:abstractify/providers/settingsprovider.dart';
 import 'package:abstractify/screens/home.dart';
 import 'package:abstractify/screens/aboutus.dart';
 import 'package:abstractify/screens/grammar.dart';
-import 'package:abstractify/screens/handocr.dart';
 import 'package:abstractify/screens/ocr.dart';
 import 'package:abstractify/screens/settings.dart';
 import 'package:abstractify/screens/summary.dart';
-import 'package:abstractify/screens/typedocr.dart';
 
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
@@ -108,8 +106,6 @@ class MyApp extends ConsumerWidget {
         '/summary': (context) => Summary(),
         '/grammar': (context) => Grammar(),
         '/ocr': (context) => Ocr(),
-        '/ocr/typed': (context) => TypedOcr(),
-        '/ocr/hand': (context) => HandOcr(),
         '/setting': (context) => Settings(),
         '/aboutus': (context) => AboutUs(),
       },

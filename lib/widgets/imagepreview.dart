@@ -15,7 +15,7 @@ class ImagePreviewModal extends StatelessWidget {
       insetPadding: const EdgeInsets.all(16),
       child: Container(
         width: screenSize.width * 0.8,
-        height: screenSize.height * 0.6,
+        height: screenSize.height * 0.8,
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
@@ -76,19 +76,37 @@ class ImagePreviewModal extends StatelessWidget {
                               child: FutureBuilder<Size>(
                                 future: _getImageSize(image),
                                 builder: (context, snapshot) {
+                                  final fileSizeKB = image.lengthSync() / 1024;
+                                  final formattedSize = fileSizeKB > 1024
+                                      ? '${(fileSizeKB / 1024).toStringAsFixed(1)} MB'
+                                      : '${fileSizeKB.toStringAsFixed(1)} KB';
+
                                   if (snapshot.connectionState ==
                                           ConnectionState.done &&
                                       snapshot.hasData) {
                                     final size = snapshot.data!;
-                                    return Text(
-                                      '${size.width.toInt()} x ${size.height.toInt()}',
-                                      style: const TextStyle(
-                                          fontSize: 12, color: Colors.grey),
+                                    return Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          '${size.width.toInt()} x ${size.height.toInt()}',
+                                          style: const TextStyle(
+                                              fontSize: 12, color: Colors.grey),
+                                        ),
+                                        Text(
+                                          formattedSize,
+                                          style: const TextStyle(
+                                              fontSize: 12, color: Colors.grey),
+                                        ),
+                                      ],
                                     );
                                   } else {
-                                    return const Text('Loading...',
-                                        style: TextStyle(
-                                            fontSize: 12, color: Colors.grey));
+                                    return const Text(
+                                      'Loading...',
+                                      style: TextStyle(
+                                          fontSize: 12, color: Colors.grey),
+                                    );
                                   }
                                 },
                               ),

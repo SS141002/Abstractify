@@ -93,7 +93,7 @@ class _DropZoneWidgetState extends State<DropZoneWidget> {
                 color: isHighlighted ? Colors.blue : Colors.grey,
               ),
               borderRadius: BorderRadius.circular(12),
-              color: Colors.white,
+              //color: Colors.white,
             ),
             padding: const EdgeInsets.all(16),
             child: Row(
