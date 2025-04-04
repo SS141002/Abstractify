@@ -44,19 +44,13 @@ class _OcrState extends State<Ocr> {
 
   File? _imageFile;
   String response = "";
-  String image1 = "";
-  String image2 = "";
 
   Set<String> selectedFiles = {}; // Store file paths
 
   int port = 5000;
-  PageType method = PageType.plain;
-
-  String? filename(String path) {
-    final regex = RegExp(r'[^\\/]+$');
-    final match = regex.firstMatch(path);
-    return match != null ? match.group(0) : '';
-  }
+  PageType selectedPageType = PageType.plain;
+  OcrMode selectedOcrMode = OcrMode.handwritten;
+  SegmentationMode selectedSegmentationMode = SegmentationMode.automatic;
 
   void updateFiles(List<String> newFiles) {
     setState(() {
@@ -73,7 +67,7 @@ class _OcrState extends State<Ocr> {
       await http.MultipartFile.fromPath('image', _imageFile!.path),
     );
 
-    request.fields['type'] = method.toString();
+    request.fields['type'] = selectedPageType.toString();
     request.fields['kHeight'] = _kHeightController.text;
     request.fields['kWidth'] = _kWidthController.text;
     request.fields['overlapUp'] = _overlapUpperController.text;
@@ -103,8 +97,6 @@ class _OcrState extends State<Ocr> {
       if (res.statusCode == 200) {
         Map<String, dynamic> body = jsonDecode(resBody);
         response = body['text'];
-        image1 = body['image1'];
-        image2 = body['image2'];
       } else {
         response = "failed to upload : ${res.statusCode}";
       }
@@ -158,6 +150,26 @@ class _OcrState extends State<Ocr> {
     super.dispose();
   }
 
+  Widget _buildToggle<T>({
+    required List<T> values,
+    required T selectedValue,
+    required String Function(T) labelBuilder,
+    required Function(T) onChanged,
+  }) {
+    return ToggleButtons(
+      isSelected: values.map((v) => v == selectedValue).toList(),
+      onPressed: (index) {
+        onChanged(values[index]);
+      },
+      borderRadius: BorderRadius.circular(8),
+      selectedColor: Colors.white,
+      fillColor: Colors.blue,
+      color: Colors.black,
+      constraints: const BoxConstraints(minWidth: 70, minHeight: 30),
+      children: values.map((v) => Text(labelBuilder(v))).toList(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -185,327 +197,291 @@ class _OcrState extends State<Ocr> {
                     const SizedBox(
                       height: 15,
                     ),
-                    Text("Detection Method :"),
                     Row(
                       children: [
-                        Radio(
-                          value: PageType.plain,
-                          groupValue: method,
-                          onChanged: (PageType? value) {
-                            setState(() {
-                              method = value!;
-                            });
+                        const Text("OCR Mode: "),
+                        const SizedBox(width: 10),
+                        _buildToggle<OcrMode>(
+                          values: OcrMode.values,
+                          selectedValue: selectedOcrMode,
+                          labelBuilder: (mode) =>
+                              mode == OcrMode.typed ? "Typed" : "Hand",
+                          onChanged: (val) {
+                            setState(() => selectedOcrMode = val);
                           },
-                        ),
-                        Text(
-                          "Dilation (for plain pages)",
-                        ),
-                        const SizedBox(
-                          width: 30,
-                        ),
-                        Radio(
-                          value: PageType.ruled,
-                          groupValue: method,
-                          onChanged: (PageType? value) {
-                            setState(() {
-                              method = value!;
-                            });
-                          },
-                        ),
-                        Text(
-                          "Line Detection (for ruled pages)",
                         ),
                       ],
                     ),
+                    const SizedBox(height: 20),
+                    if (selectedOcrMode == OcrMode.handwritten)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Text("Segmentation: "),
+                              const SizedBox(width: 10),
+                              _buildToggle<SegmentationMode>(
+                                values: SegmentationMode.values,
+                                selectedValue: selectedSegmentationMode,
+                                labelBuilder: (mode) =>
+                                    mode == SegmentationMode.automatic
+                                        ? "Auto"
+                                        : "Manual",
+                                onChanged: (val) {
+                                  setState(
+                                      () => selectedSegmentationMode = val);
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          Row(
+                            children: [
+                              const Text("Page Type: "),
+                              const SizedBox(width: 10),
+                              _buildToggle<PageType>(
+                                values: PageType.values,
+                                selectedValue: selectedPageType,
+                                labelBuilder: (type) =>
+                                    type == PageType.ruled ? "Ruled" : "Plain",
+                                onChanged: (val) {
+                                  setState(() => selectedPageType = val);
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     const SizedBox(
                       height: 15,
                     ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _kHeightController,
-                            enabled: method == PageType.plain,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: "Kernel Height (px)",
-                              helperText: "usually small",
-                              errorText: (kernelHeightValid ||
-                                      method != PageType.plain)
-                                  ? null
-                                  : "Please enter valid integer",
-                            ),
-                            onChanged: (String value) {
-                              final val = int.tryParse(value);
-
-                              if (val == null) {
-                                setState(() => kernelHeightValid = false);
-                              } else {
-                                setState(() => kernelHeightValid = true);
-                              }
-                            },
-                            validator: (value) {
-                              if (method == PageType.ruled) {
-                                return null;
-                              } else {
+                    if (selectedOcrMode == OcrMode.handwritten &&
+                        selectedSegmentationMode == SegmentationMode.manual &&
+                        selectedPageType == PageType.plain)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _kHeightController,
+                              enabled: selectedPageType == PageType.plain,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: "Kernel Height (px)",
+                                helperText: "usually small",
+                                errorText: (kernelHeightValid ||
+                                        selectedPageType != PageType.plain)
+                                    ? null
+                                    : "Please enter valid integer",
+                              ),
+                              onChanged: (String value) {
+                                final val = int.tryParse(value);
+                                setState(() => kernelHeightValid = val != null);
+                              },
+                              validator: (value) {
+                                if (selectedPageType == PageType.ruled) {
+                                  return null;
+                                }
                                 if (value == null || value.isEmpty) {
                                   return "Please Enter kernel height";
                                 }
                                 if (int.tryParse(value) == null) {
                                   return "Please Enter Valid Number";
                                 }
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 30,
-                        ),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _kWidthController,
-                            enabled: method == PageType.plain,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: "Kernel Width",
-                              helperText: "proportional to text size",
-                              errorText:
-                                  (kernelWidthValid || method != PageType.plain)
-                                      ? null
-                                      : "Please enter valid integer",
-                            ),
-                            onChanged: (String value) {
-                              final val = int.tryParse(value);
-
-                              if (val == null) {
-                                setState(() => kernelWidthValid = false);
-                              } else {
-                                setState(() => kernelWidthValid = true);
-                              }
-                            },
-                            validator: (value) {
-                              if (method == PageType.ruled) {
                                 return null;
-                              } else {
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 30),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _kWidthController,
+                              enabled: selectedPageType == PageType.plain,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: "Kernel Width",
+                                helperText: "proportional to text size",
+                                errorText: (kernelWidthValid ||
+                                        selectedPageType != PageType.plain)
+                                    ? null
+                                    : "Please enter valid integer",
+                              ),
+                              onChanged: (String value) {
+                                final val = int.tryParse(value);
+                                setState(() => kernelWidthValid = val != null);
+                              },
+                              validator: (value) {
+                                if (selectedPageType == PageType.ruled) {
+                                  return null;
+                                }
                                 if (value == null || value.isEmpty) {
                                   return "Please Enter kernel width";
                                 }
                                 if (int.tryParse(value) == null) {
                                   return "Please Enter Valid Number";
                                 }
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _overlapUpperController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: "Overlap (px)",
-                              helperText:
-                                  "It sets how much can images overlap from top",
-                              errorText: (overlapUpperValid)
-                                  ? null
-                                  : "Please enter valid integer",
-                            ),
-                            onChanged: (String value) {
-                              final val = int.tryParse(value);
-
-                              if (val == null) {
-                                setState(() => overlapUpperValid = false);
-                              } else {
-                                setState(() => overlapUpperValid = true);
-                              }
-                            },
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return "Please Enter overlap";
-                              }
-                              if (int.tryParse(value) == null) {
-                                return "please enter valid number";
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 30,
-                        ),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _overlapLowerController,
-                            enabled: method == PageType.ruled,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: "Overlap (px)",
-                              helperText:
-                                  "It sets how much can images overlap from bottom",
-                              errorText: (overlapLowerValid ||
-                                      method != PageType.ruled)
-                                  ? null
-                                  : "Please enter valid integer",
-                            ),
-                            onChanged: (String value) {
-                              final val = int.tryParse(value);
-
-                              if (val == null) {
-                                setState(() => overlapLowerValid = false);
-                              } else {
-                                setState(() => overlapLowerValid = true);
-                              }
-                            },
-                            validator: (value) {
-                              if (method == PageType.plain) {
                                 return null;
-                              } else {
-                                if (value == null || value.isEmpty) {
-                                  return "Please Enter overlap";
-                                }
-                                if (int.tryParse(value) == null) {
-                                  return "please enter valid number";
-                                }
-                              }
-                              return null;
-                            },
+                              },
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    TextFormField(
-                      controller: _minHeightController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: "Minimum Height Threshold (px)",
-                        helperText:
-                            "It sets how much minimum height a image should have to be considered as text",
-                        errorText: (minThresValid)
-                            ? null
-                            : "Please enter valid integer",
+                        ],
                       ),
-                      onChanged: (String value) {
-                        final val = int.tryParse(value);
-
-                        if (val == null) {
-                          setState(() => minThresValid = false);
-                        } else {
-                          setState(() => minThresValid = true);
-                        }
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Please height threshold";
-                        }
-                        if (int.tryParse(value) == null) {
-                          return "please enter valid number";
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _minWhiteController,
-                            enabled: method == PageType.ruled,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: "Minimum Whiteness",
-                              errorText:
-                                  (minWhiteValid || method != PageType.ruled)
-                                      ? null
-                                      : "Please enter valid integer",
-                            ),
-                            onChanged: (String value) {
-                              final val = int.tryParse(value);
-
-                              if (val == null) {
-                                setState(() => minWhiteValid = false);
-                              } else {
-                                setState(() => minWhiteValid = true);
-                              }
-                            },
-                            validator: (value) {
-                              if (method == PageType.plain) {
-                                return null;
-                              } else {
+                    if (selectedOcrMode == OcrMode.handwritten &&
+                        selectedSegmentationMode == SegmentationMode.manual &&
+                        selectedPageType == PageType.ruled)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _minWhiteController,
+                              enabled: true,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: "Minimum Whiteness",
+                                errorText: minWhiteValid
+                                    ? null
+                                    : "Please enter valid integer",
+                              ),
+                              onChanged: (String value) {
+                                final val = int.tryParse(value);
+                                setState(() => minWhiteValid = val != null);
+                              },
+                              validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return "Please enter minimum Whiteness";
                                 }
-                                if (int.tryParse(value) == null) {
-                                  return "please enter valid number";
-                                } else {
-                                  int num = int.parse(value);
-                                  if (num < 1) {
-                                    return "Values must be > 0";
-                                  }
-                                }
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 30,
-                        ),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _maxWhiteController,
-                            enabled: method == PageType.ruled,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: "Maximum Whiteness",
-                              errorText:
-                                  (maxWhiteValid || method != PageType.ruled)
-                                      ? null
-                                      : "Please enter valid integer",
-                            ),
-                            onChanged: (String value) {
-                              final val = int.tryParse(value);
-
-                              if (val == null) {
-                                setState(() => maxWhiteValid = false);
-                              } else {
-                                setState(() => maxWhiteValid = true);
-                              }
-                            },
-                            validator: (value) {
-                              if (method == PageType.plain) {
+                                final val = int.tryParse(value);
+                                if (val == null)
+                                  return "Please enter valid number";
+                                if (val < 1) return "Values must be > 0";
                                 return null;
-                              } else {
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 30),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _maxWhiteController,
+                              enabled: true,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: "Maximum Whiteness",
+                                errorText: maxWhiteValid
+                                    ? null
+                                    : "Please enter valid integer",
+                              ),
+                              onChanged: (String value) {
+                                final val = int.tryParse(value);
+                                setState(() => maxWhiteValid = val != null);
+                              },
+                              validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return "Please Enter maximum Whiteness";
                                 }
-                                if (int.tryParse(value) == null) {
-                                  return "please enter valid number";
-                                } else {
-                                  int num = int.parse(value);
-                                  if (num > 255) {
-                                    return "Values must be < 255";
-                                  }
-                                }
-                              }
-                              return null;
-                            },
+                                final val = int.tryParse(value);
+                                if (val == null)
+                                  return "Please enter valid number";
+                                if (val > 255) return "Values must be < 255";
+                                return null;
+                              },
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                    const SizedBox(
+                      height: 15,
                     ),
+                    if (selectedOcrMode == OcrMode.handwritten &&
+                        selectedSegmentationMode == SegmentationMode.manual)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _overlapUpperController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: "Overlap Top (px)",
+                                helperText:
+                                    "How much images can overlap from top",
+                                errorText: overlapUpperValid
+                                    ? null
+                                    : "Please enter valid integer",
+                              ),
+                              onChanged: (String value) {
+                                final val = int.tryParse(value);
+                                setState(() => overlapUpperValid = val != null);
+                              },
+                              validator: (value) {
+                                if (value == null || value.isEmpty)
+                                  return "Please enter overlap";
+                                if (int.tryParse(value) == null)
+                                  return "Please enter valid number";
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 30),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _overlapLowerController,
+                              enabled: selectedPageType == PageType.ruled,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: "Overlap Bottom (px)",
+                                helperText:
+                                    "How much images can overlap from bottom",
+                                errorText: (overlapLowerValid ||
+                                        selectedPageType != PageType.ruled)
+                                    ? null
+                                    : "Please enter valid integer",
+                              ),
+                              onChanged: (String value) {
+                                final val = int.tryParse(value);
+                                setState(() => overlapLowerValid = val != null);
+                              },
+                              validator: (value) {
+                                if (selectedPageType == PageType.plain)
+                                  return null;
+                                if (value == null || value.isEmpty)
+                                  return "Please enter overlap";
+                                if (int.tryParse(value) == null)
+                                  return "Please enter valid number";
+                                return null;
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    if (selectedOcrMode == OcrMode.handwritten &&
+                        selectedSegmentationMode == SegmentationMode.manual)
+                      TextFormField(
+                        controller: _minHeightController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: "Minimum Height Threshold (px)",
+                          helperText:
+                              "It sets how much minimum height an image should have to be considered as text",
+                          errorText: minThresValid
+                              ? null
+                              : "Please enter valid integer",
+                        ),
+                        onChanged: (String value) {
+                          final val = int.tryParse(value);
+                          setState(() => minThresValid = val != null);
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Please enter height threshold";
+                          }
+                          if (int.tryParse(value) == null) {
+                            return "Please enter valid number";
+                          }
+                          return null;
+                        },
+                      ),
                     const SizedBox(
                       height: 15,
                     ),
