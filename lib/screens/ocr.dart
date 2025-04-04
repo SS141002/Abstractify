@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:convert';
+import 'package:abstractify/widgets/language_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:abstractify/screens/navdrawer.dart';
 import 'package:abstractify/widgets/floatingactbutton.dart';
@@ -42,10 +42,10 @@ class _OcrState extends State<Ocr> {
   bool maxWhiteValid = true;
   bool isLoading = false;
 
-  File? _imageFile;
   String response = "";
 
   Set<String> selectedFiles = {}; // Store file paths
+  List<String> selectedLanguages = [];
 
   int port = 5000;
   PageType selectedPageType = PageType.plain;
@@ -63,9 +63,11 @@ class _OcrState extends State<Ocr> {
 
     var request = http.MultipartRequest('POST', Uri.parse(url));
 
-    request.files.add(
-      await http.MultipartFile.fromPath('image', _imageFile!.path),
-    );
+    for (var filePath in selectedFiles) {
+      request.files.add(
+        await http.MultipartFile.fromPath('images', filePath),
+      );
+    }
 
     request.fields['type'] = selectedPageType.toString();
     request.fields['kHeight'] = _kHeightController.text;
@@ -80,25 +82,25 @@ class _OcrState extends State<Ocr> {
       setState(() {
         isLoading = true;
       });
+
       final res = await request.send().timeout(
-        Duration(
-          seconds: 120,
-        ),
+        const Duration(seconds: 120),
         onTimeout: () {
-          throw TimeoutException("The request timed out..");
+          throw TimeoutException("The request timed out.");
         },
       );
+
+      final resBody = await res.stream.bytesToString();
+
       setState(() {
         isLoading = false;
       });
-
-      final resBody = await res.stream.bytesToString();
 
       if (res.statusCode == 200) {
         Map<String, dynamic> body = jsonDecode(resBody);
         response = body['text'];
       } else {
-        response = "failed to upload : ${res.statusCode}";
+        response = "Failed to upload: ${res.statusCode}";
       }
     } on TimeoutException catch (_) {
       isLoading = false;
@@ -115,7 +117,7 @@ class _OcrState extends State<Ocr> {
   }
 
   void _submitForm() {
-    if (_imageFile != null) {
+    if (selectedFiles.isNotEmpty) {
       if (_formKey.currentState!.validate()) {
         int min = int.parse(_minWhiteController.text);
         int max = int.parse(_maxWhiteController.text);
@@ -124,16 +126,17 @@ class _OcrState extends State<Ocr> {
           sendPostReq();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content:
-                  Text("minimum brightness cannot exceed maximum brightness"),
+                  Text("Minimum brightness cannot exceed maximum brightness"),
             ),
           );
         }
       }
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("No image selected")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No images selected")),
+      );
     }
   }
 
@@ -212,7 +215,7 @@ class _OcrState extends State<Ocr> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 15),
                     if (selectedOcrMode == OcrMode.handwritten)
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,7 +238,7 @@ class _OcrState extends State<Ocr> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 15),
                           Row(
                             children: [
                               const Text("Page Type: "),
@@ -256,6 +259,15 @@ class _OcrState extends State<Ocr> {
                     const SizedBox(
                       height: 15,
                     ),
+                    if (selectedOcrMode == OcrMode.typed)
+                      MultiLanguageSelector(
+                        selectedLanguages: selectedLanguages,
+                        onSelectionChanged: (newList) {
+                          setState(() {
+                            selectedLanguages = newList;
+                          });
+                        },
+                      ),
                     if (selectedOcrMode == OcrMode.handwritten &&
                         selectedSegmentationMode == SegmentationMode.manual &&
                         selectedPageType == PageType.plain)

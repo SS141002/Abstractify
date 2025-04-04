@@ -11,10 +11,10 @@ class DropZoneWidget extends StatefulWidget {
   const DropZoneWidget({super.key, required this.onFilesChanged});
 
   @override
-  _DropZoneWidgetState createState() => _DropZoneWidgetState();
+  DropZoneWidgetState createState() => DropZoneWidgetState();
 }
 
-class _DropZoneWidgetState extends State<DropZoneWidget> {
+class DropZoneWidgetState extends State<DropZoneWidget> {
   bool isHighlighted = false;
   Set<String> selectedFiles = {}; // Stores file URIs
 
@@ -68,9 +68,8 @@ class _DropZoneWidgetState extends State<DropZoneWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 200,
-      padding: const EdgeInsets.all(12),
+    return SizedBox(
+      height: 160,
       child: DropTarget(
         onDragEntered: (details) {
           setState(() => isHighlighted = true);
