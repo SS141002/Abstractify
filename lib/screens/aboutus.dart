@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:abstractify/models/aboutcard.dart';
+import 'package:abstractify/widgets/aboutcard.dart';
 import 'package:abstractify/screens/navdrawer.dart';
 
 class AboutUs extends StatelessWidget {

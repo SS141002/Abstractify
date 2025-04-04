@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
-import 'package:abstractify/screens/imagepreview.dart';
+import 'package:abstractify/widgets/imagepreview.dart';
 import 'package:flutter/material.dart';
 import 'package:abstractify/screens/navdrawer.dart';
-import 'package:abstractify/models/floatingactbutton.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:abstractify/widgets/floatingactbutton.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
+import 'package:abstractify/widgets/dropzone_widget.dart';
 
 enum MethodDt { dilated, lineDetection }
 
@@ -44,8 +44,9 @@ class _HandOcrState extends State<HandOcr> {
   String image1 = "";
   String image2 = "";
 
+  Set<String> selectedFiles = {}; // Store file paths
+
   int port = 5000;
-  int? imgWidth, imgHeight;
   MethodDt method = MethodDt.dilated;
 
   String? filename(String path) {
@@ -54,24 +55,10 @@ class _HandOcrState extends State<HandOcr> {
     return match != null ? match.group(0) : '';
   }
 
-  Future<void> pickImage() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-    );
-
-    if (result != null) {
-      setState(() {
-        _imageFile = File(result.files.single.path!);
-      });
-      var decodedImage = await decodeImageFromList(
-        _imageFile!.readAsBytesSync(),
-      );
-
-      setState(() {
-        imgHeight = decodedImage.height;
-        imgWidth = decodedImage.width;
-      });
-    }
+  void updateFiles(List<String> newFiles) {
+    setState(() {
+      selectedFiles = newFiles.toSet();
+    });
   }
 
   Future<void> sendPostReq() async {
@@ -191,36 +178,21 @@ class _HandOcrState extends State<HandOcr> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        ElevatedButton(
-                          onPressed: pickImage,
-                          child: Text("Select Image"),
-                        ),
-                        const SizedBox(
-                          width: 30,
-                        ),
-                        Expanded(
-                          child: Text(
-                            _imageFile != null
-                                ? filename(_imageFile!.path)!
-                                : "No image Selected",
-                            overflow: TextOverflow.clip,
-                          ),
-                        )
-                      ],
-                    ),
+                    DropZoneWidget(onFilesChanged: updateFiles),
                     const SizedBox(
                       height: 15,
                     ),
-                    Row(
-                      children: [
-                        Text("Image Height : "),
-                        Text(imgHeight == null ? "N/A" : "$imgHeight"),
-                        const SizedBox(width: 30),
-                        Text("Image Width : "),
-                        Text(imgWidth == null ? "N/A" : "$imgWidth"),
-                      ],
+                    ElevatedButton.icon(
+                      onPressed: selectedFiles.isEmpty
+                          ? null // Disable if no images
+                          : () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => ImagePreviewModal(imagePaths: selectedFiles.toList()),
+                        );
+                            },
+                      icon: const Icon(Icons.image),
+                      label: const Text("Image Preview"),
                     ),
                     const SizedBox(
                       height: 15,
@@ -293,11 +265,6 @@ class _HandOcrState extends State<HandOcr> {
                                 }
                                 if (int.tryParse(value) == null) {
                                   return "Please Enter Valid Number";
-                                } else {
-                                  int num = int.parse(value);
-                                  if (num < 1 || num > (0.1 * imgHeight!)) {
-                                    return "Values must be between 1 and ${0.1 * imgHeight!}";
-                                  }
                                 }
                               }
                               return null;
@@ -338,11 +305,6 @@ class _HandOcrState extends State<HandOcr> {
                                 }
                                 if (int.tryParse(value) == null) {
                                   return "Please Enter Valid Number";
-                                } else {
-                                  int num = int.parse(value);
-                                  if (num < 1 || num > imgWidth!) {
-                                    return "Values must be between 1 and $imgWidth";
-                                  }
                                 }
                               }
                               return null;
@@ -383,11 +345,6 @@ class _HandOcrState extends State<HandOcr> {
                               }
                               if (int.tryParse(value) == null) {
                                 return "please enter valid number";
-                              } else {
-                                int num = int.parse(value);
-                                if (num < 0 || num > (0.25 * imgHeight!)) {
-                                  return "Values must be between 0 and ${0.25 * imgHeight!}";
-                                }
                               }
                               return null;
                             },
@@ -428,11 +385,6 @@ class _HandOcrState extends State<HandOcr> {
                                 }
                                 if (int.tryParse(value) == null) {
                                   return "please enter valid number";
-                                } else {
-                                  int num = int.parse(value);
-                                  if (num < 0 || num > (0.25 * imgHeight!)) {
-                                    return "Values must be between 0 and ${0.25 * imgHeight!}";
-                                  }
                                 }
                               }
                               return null;
@@ -470,11 +422,6 @@ class _HandOcrState extends State<HandOcr> {
                         }
                         if (int.tryParse(value) == null) {
                           return "please enter valid number";
-                        } else {
-                          int num = int.parse(value);
-                          if (num < 1 || num > imgHeight!) {
-                            return "Values must be between 1 and $imgHeight";
-                          }
                         }
                         return null;
                       },
@@ -570,22 +517,6 @@ class _HandOcrState extends State<HandOcr> {
                           ),
                         ),
                       ],
-                    ),
-                    Expanded(child: SizedBox()),
-                    Center(
-                      child: TextButton(
-                        onPressed: isLoading
-                            ? null
-                            : () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (ctx) => ImagePreview(
-                                        image1: image1, image2: image2),
-                                  ),
-                                );
-                              },
-                        child: Text("Preview Image"),
-                      ),
                     ),
                     const SizedBox(
                       height: 15,

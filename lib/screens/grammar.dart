@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:abstractify/screens/navdrawer.dart';
-import 'package:abstractify/models/floatingactbutton.dart';
+import 'package:abstractify/widgets/floatingactbutton.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 

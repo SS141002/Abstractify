@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:abstractify/models/floatingactbutton.dart';
+import 'package:abstractify/widgets/floatingactbutton.dart';
 import 'package:abstractify/screens/navdrawer.dart';
 
 class Home extends StatelessWidget {

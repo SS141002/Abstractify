@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:abstractify/screens/navdrawer.dart';
-import 'package:abstractify/models/floatingactbutton.dart';
+import 'package:abstractify/widgets/floatingactbutton.dart';
 
 class Ocr extends StatelessWidget {
   const Ocr({super.key});

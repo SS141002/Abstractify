@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:abstractify/models/floatingactbutton.dart';
+import 'package:abstractify/widgets/floatingactbutton.dart';
 import 'package:abstractify/screens/navdrawer.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
@@ -279,7 +279,7 @@ class _SummaryState extends State<Summary> {
                         minLines: null,
                         decoration: const InputDecoration(
                           hintText:
-                          "Enter your text here (or choose a file above)",
+                              "Enter your text here (or choose a file above)",
                           border: OutlineInputBorder(),
                         ),
                         validator: (value) {
@@ -294,17 +294,29 @@ class _SummaryState extends State<Summary> {
                     SizedBox(
                       height: 80,
                       child: Center(
-                        child: isLoading
-                            ? SizedBox(
-                          height: 75,
-                          child: Lottie.asset(
-                            "assets/animations/waiting.json",
-                            frameRate: FrameRate(60),
-                          ),
-                        )
-                            : FloatingActButton(
-                          text: "Summarize",
-                          func: _submitForm,
+                        child: AnimatedSwitcher(
+                          duration: Duration(milliseconds: 400),
+                          // Smooth transition effect
+                          switchInCurve: Curves.easeOut,
+                          switchOutCurve: Curves.easeInOut,
+                          child: isLoading
+                              ? SizedBox(
+                                  height: 75,
+                                  key: ValueKey(
+                                      1), // Unique key to trigger animation
+                                  child: Lottie.asset(
+                                    "assets/animations/waiting.json",
+                                    frameRate: FrameRate(60),
+                                  ),
+                                )
+                              : FloatingActButton(
+                                  key: ValueKey(
+                                      2), // Unique key for smooth switch
+                                  text: "Summarize",
+                                  func: isLoading
+                                      ? () {}
+                                      : _submitForm, // Disable button if loading
+                                ),
                         ),
                       ),
                     ),
