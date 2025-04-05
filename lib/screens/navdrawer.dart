@@ -5,73 +5,163 @@ class NavDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final drawerWidth = MediaQuery.of(context).size.width * 0.25;
+    final theme = Theme.of(context);
+    final isDesktop = MediaQuery.of(context).size.width >= 600;
+
     return Drawer(
-      width: drawerWidth,
-      child: ListView(
-        padding: EdgeInsets.all(8),
-        children: <Widget>[
-          SizedBox(
-            height: 270,
-            child: DrawerHeader(
-              child: Column(
+      width: isDesktop ? 280 : null, // Adaptive width
+      child: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(context),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 children: [
-                  CircleAvatar(
-                    radius: 100,
-                    backgroundImage: AssetImage("assets/images/download.jpg"),
+                  _buildNavItem(
+                    context: context,
+                    icon: Icons.home_filled,
+                    label: "Home",
+                    route: '/',
                   ),
-                  SizedBox(
-                    height: 5,
+                  _buildDivider(),
+                  _buildNavItem(
+                    context: context,
+                    icon: Icons.settings,
+                    label: "Settings",
+                    route: '/setting',
                   ),
-                  Text(
-                    "Abstractify",
-                    style: TextStyle(fontFamily: "Audiowide", fontSize: 20),
+                  _buildDivider(),
+                  _buildNavItem(
+                    context: context,
+                    icon: Icons.people_alt,
+                    label: "About Us",
+                    route: '/aboutus',
                   ),
                 ],
               ),
             ),
+            _buildFooter(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: theme.dividerColor.withValues(alpha: 0.1),
+            width: 1,
           ),
-          ListTile(
-            leading: Icon(Icons.home),
-            title: Text(" Home"),
-            onTap: () {
-              String? currentRoute = ModalRoute.of(context)?.settings.name;
-              if (currentRoute != '/') {
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  '/',
-                  (route) => false,
-                );
-              } else {
-                Navigator.of(context).maybePop();
-              }
-            },
+        ),
+      ),
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 48,
+            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+            backgroundImage: AssetImage("assets/images/download.jpg"),
           ),
-          ListTile(
-            leading: Icon(Icons.settings),
-            title: Text(" Setting"),
-            onTap: () {
-              Navigator.of(context).popUntil(
-                ModalRoute.withName(
-                  '/',
-                ),
-              );
-              Navigator.of(context).pushNamed('/setting');
-            },
+          const SizedBox(height: 16),
+          Text(
+            "Abstractify",
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
           ),
-          ListTile(
-            leading: Icon(Icons.groups),
-            title: Text(" About Us"),
-            onTap: () {
-              Navigator.of(context).popUntil(
-                ModalRoute.withName(
-                  '/',
-                ),
-              );
-              Navigator.of(context).pushNamed('/aboutus');
-            },
-          )
+          const SizedBox(height: 4),
+          Text(
+            "v1.0.0",
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  Widget _buildNavItem({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required String route,
+  }) {
+    final theme = Theme.of(context);
+    final currentRoute = ModalRoute.of(context)?.settings.name;
+
+    return ListTile(
+      leading: Icon(icon, color: theme.colorScheme.onSurface.withValues(alpha: 0.8)),
+      title: Text(label),
+      trailing: currentRoute == route
+          ? Icon(Icons.check, color: theme.colorScheme.primary, size: 18)
+          : null,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+      horizontalTitleGap: 8,
+      minLeadingWidth: 24,
+      dense: true,
+      selected: currentRoute == route,
+      selectedColor: theme.colorScheme.primary,
+      hoverColor: theme.colorScheme.primary.withValues(alpha: 0.05),
+      splashColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+      onTap: () => _handleNavigation(context, route),
+    );
+  }
+
+  Widget _buildDivider() {
+    return const Divider(height: 1, indent: 24, endIndent: 24);
+  }
+
+  Widget _buildFooter(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          const Divider(),
+          const SizedBox(height: 8),
+          Text(
+            "© 2024 Abstractify",
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
+          Text(
+            "All rights reserved",
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleNavigation(BuildContext context, String route) {
+    try {
+      // Close drawer first
+      Navigator.pop(context);
+
+      // Check if we're already on the target route
+      if (ModalRoute.of(context)?.settings.name == route) return;
+
+      // Navigate using pushNamed to maintain stack
+      Navigator.pushNamed(context, route);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Navigation error: ${e.toString()}"),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
   }
 }
