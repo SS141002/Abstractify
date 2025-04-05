@@ -1,66 +1,118 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class AboutUsCard extends StatelessWidget {
+class AboutUsCard extends StatefulWidget {
   const AboutUsCard({
     super.key,
     required this.name,
     required this.link,
+    required this.avatarImage,
+    this.iconImage = 'assets/images/linkedin.png',
+    this.onTap,
   });
 
   final String name;
   final String link;
+  final String avatarImage;
+  final String iconImage;
+  final VoidCallback? onTap;
 
-  Future<void> openWebLink(String link) async {
-    final Uri uri = Uri.parse(link);
+  @override
+  State<AboutUsCard> createState() => _AboutUsCardState();
+}
 
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
+class _AboutUsCardState extends State<AboutUsCard> {
+  bool _isHovered = false;
+  bool _isPressed = false;
+
+  Future<void> _launchProfile() async {
+    try {
+      final uri = Uri.parse(widget.link);
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not launch ${widget.link}')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error opening link')),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      elevation: 4,
-      child: InkWell(
-        onTap: () {},
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircleAvatar(
-                radius: 100,
-                backgroundImage: AssetImage("assets/images/man.png"),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) => setState(() => _isPressed = false),
+        onTapCancel: () => setState(() => _isPressed = false),
+        onTap: widget.onTap ?? _launchProfile,
+        child: AnimatedScale(
+          duration: const Duration(milliseconds: 200),
+          scale: _isHovered ? 1.03 : 1.0,
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(
+                color: _isHovered
+                    ? colorScheme.primary.withOpacity(0.2)
+                    : Colors.transparent,
+                width: 1.5,
               ),
-              const SizedBox(
-                height: 15,
+            ),
+            elevation: _isPressed ? 8 : _isHovered ? 6 : 4,
+            color: _isPressed
+                ? colorScheme.surfaceVariant
+                : colorScheme.surface,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    transform: Matrix4.identity()
+                      ..translate(
+                        0.0,
+                        _isPressed ? 4.0 : _isHovered ? -2.0 : 0.0,
+                      ),
+                    child: CircleAvatar(
+                      radius: 100,
+                      backgroundImage: AssetImage(widget.avatarImage),
+                      backgroundColor: colorScheme.surfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    widget.name,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  IconButton(
+                    icon: Image.asset(
+                      widget.iconImage,
+                      height: 32,
+                      color: colorScheme.primary,
+                    ),
+                    tooltip: 'View LinkedIn profile',
+                    onPressed: _launchProfile,
+                    hoverColor: colorScheme.primary.withOpacity(0.1),
+                  ),
+                ],
               ),
-              Text(
-                name,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 20,
-                ),
-              ),
-              const SizedBox(
-                height: 15,
-              ),
-              IconButton(
-                icon: Image.asset(
-                  "assets/images/linkedin.png",
-                  height: 32,
-                ),
-                onPressed: () => openWebLink(link),
-              )
-            ],
+            ),
           ),
         ),
       ),

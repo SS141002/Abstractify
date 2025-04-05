@@ -313,7 +313,7 @@ class _SummaryState extends State<Summary> {
                                   key: ValueKey(
                                       2), // Unique key for smooth switch
                                   text: "Summarize",
-                                  func: isLoading
+                                  onPressed: isLoading
                                       ? () {}
                                       : _submitForm, // Disable button if loading
                                 ),

@@ -510,7 +510,7 @@ class _OcrState extends State<Ocr> {
                               )
                             : FloatingActButton(
                                 text: "Process",
-                                func: _submitForm,
+                                onPressed: _submitForm,
                               ),
                       ),
                     ),

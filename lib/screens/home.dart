@@ -25,25 +25,25 @@ class Home extends StatelessWidget {
           children: [
             FloatingActButton(
               text: "Summarizer",
-              size: 200,
-              icn: Icon(Icons.summarize),
-              func: () {
+              minWidth: 200,
+              icon: Icon(Icons.summarize),
+              onPressed: () {
                 Navigator.of(context).pushNamed('/summary');
               },
             ),
             FloatingActButton(
               text: "Grammar Checker",
-              size: 200,
-              icn: Icon(Icons.spellcheck),
-              func: () {
+              minWidth: 200,
+              icon: Icon(Icons.spellcheck),
+              onPressed: () {
                 Navigator.of(context).pushNamed('/grammar');
               },
             ),
             FloatingActButton(
               text: "OCR",
-              size: 200,
-              icn: Icon(Icons.text_snippet),
-              func: () {
+              minWidth: 200,
+              icon: Icon(Icons.text_snippet),
+              onPressed: () {
                 Navigator.of(context).pushNamed('/ocr');
               },
             ),
