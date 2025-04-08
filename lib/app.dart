@@ -11,7 +11,8 @@ import 'package:abstractify/screens/summary.dart';
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
-  ColorScheme _getColorScheme(ColorBlindMode colorBlindMode, Brightness brightness) {
+  ColorScheme _getColorScheme(
+      ColorBlindMode colorBlindMode, Brightness brightness) {
     switch (colorBlindMode) {
       case ColorBlindMode.protanopia:
         return ColorScheme.fromSeed(
@@ -112,4 +113,3 @@ class MyApp extends ConsumerWidget {
     );
   }
 }
-
