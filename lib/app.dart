@@ -72,7 +72,7 @@ class MyApp extends ConsumerWidget {
           primary: const Color(0xFF3B82F6),
           secondary: const Color(0xFF6366F1),
           surface: brightness == Brightness.light
-              ? const Color(0xFFFFFFFF)
+              ? const Color(0xFFF3F4F6) // changed from 0xFFFFFFFF
               : const Color(0xFF374151),
           onSurface: brightness == Brightness.light
               ? const Color(0xFF374151)

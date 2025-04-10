@@ -6,7 +6,7 @@ import 'package:abstractify/widgets/floatingactbutton.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:abstractify/widgets/ocr_dropzone_widget.dart';
-import 'package:abstractify/models/ocr_modes.dart';
+import 'package:abstractify/models/ocr_data.dart';
 import 'package:abstractify/widgets/ocr_mode_section.dart';
 import 'package:abstractify/widgets/language_dropdown.dart';
 
@@ -65,7 +65,9 @@ class _OcrState extends State<Ocr> {
       );
     }
 
-    request.fields['type'] = selectedPageType.toString();
+    request.fields['pageType'] = selectedPageType.toString();
+    request.fields['ocrMode'] = selectedOcrMode.toString();
+    request.fields['segmentationMode'] = selectedSegmentationMode.toString();
     request.fields['kHeight'] = _kHeightController.text;
     request.fields['kWidth'] = _kWidthController.text;
     request.fields['overlapUp'] = _overlapUpperController.text;
@@ -491,7 +493,12 @@ class _OcrState extends State<Ocr> {
                     minLines: null,
                     maxLines: null,
                     decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(12),
+
+                        ),
+                      ),
                     ),
                   ),
                 ),

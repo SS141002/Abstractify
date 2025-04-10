@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:abstractify/models/ocr_modes.dart';
+import 'package:abstractify/models/ocr_data.dart';
 
 class OcrToggleSection extends StatelessWidget {
   final OcrMode selectedOcrMode;

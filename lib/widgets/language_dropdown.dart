@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:abstractify/models/languages.dart';
+import 'package:abstractify/models/ocr_data.dart';
 
 class MultiLanguageSelector extends StatelessWidget {
   final List<String> selectedLanguages;

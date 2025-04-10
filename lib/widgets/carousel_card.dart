@@ -1,81 +1,146 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
+import 'dart:math';
+
 class CarouselCard extends StatefulWidget {
   final String title;
-  final IconData icon;
+  final String description;
   final String route;
-  final bool isActive;
+  final IconData icon;
 
   const CarouselCard({
     super.key,
     required this.title,
-    required this.icon,
+    required this.description,
     required this.route,
-    required this.isActive,
+    required this.icon,
   });
 
   @override
   State<CarouselCard> createState() => _CarouselCardState();
 }
 
-class _CarouselCardState extends State<CarouselCard> {
-  bool _isPressed = false;
+class _CarouselCardState extends State<CarouselCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+  bool _isHovered = false;
+  bool _isFront = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    _animation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  void _handleHover(bool isHovered) {
+    setState(() {
+      _isHovered = isHovered;
+    });
+
+    if (isHovered) {
+      _controller.forward();
+      _isFront = false;
+    } else {
+      _controller.reverse();
+      _isFront = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Widget _buildFront(ColorScheme colorScheme, ThemeData theme) {
+    return Card(
+      elevation: _isHovered ? 10 : 4,
+      color: colorScheme.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        width: 150,
+        height: 200,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(widget.icon, size: 48, color: colorScheme.primary),
+            const SizedBox(height: 10),
+            Text(
+              widget.title,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBack(ColorScheme colorScheme, ThemeData theme) {
+    return Card(
+      elevation: _isHovered ? 10 : 4,
+      color: colorScheme.primaryContainer,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        width: 150,
+        height: 200,
+        padding: const EdgeInsets.all(16),
+        child: Center(
+          child: Text(
+            widget.description,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onPrimaryContainer,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => widget.route.isNotEmpty
-          ? Navigator.pushNamed(context, widget.route)
-          : null,
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        transform: Matrix4.identity()..scale(_isPressed ? 0.97 : 1.0),
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withOpacity(0.15),
-                Colors.white.withOpacity(0.05),
-              ],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                spreadRadius: 1,
-                offset: const Offset(0, 4),
-              )
-            ],
-          ),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(widget.icon,
-                      size: 40,
-                      color: Colors.white.withOpacity(widget.isActive ? 1 : 0.7)),
-                  const SizedBox(height: 15),
-                  Text(widget.title,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white.withOpacity(widget.isActive ? 1 : 0.7),
-                      )),
-                ],
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return MouseRegion(
+      onEnter: (_) => _handleHover(true),
+      onExit: (_) => _handleHover(false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => Navigator.of(context).pushNamed(widget.route),
+        child: AnimatedBuilder(
+          animation: _animation,
+          builder: (context, child) {
+            final isUnderHalf = _animation.value <= 0.5;
+            final angle = _animation.value * pi;
+
+            return Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.001)
+                ..rotateY(angle),
+              child: isUnderHalf
+                  ? _buildFront(colorScheme, theme)
+                  : Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.identity()..rotateY(pi),
+                child: _buildBack(colorScheme, theme),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
