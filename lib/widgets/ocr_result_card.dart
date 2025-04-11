@@ -26,12 +26,18 @@ class OcrResultCard extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            showDialog(
-              context: context,
-              builder: (_) => OcrDetailModal(
-                tag: heroTag,
-                result: result,
-                onTextUpdated: onTextUpdated,
+            Navigator.of(context).push(
+              PageRouteBuilder(
+                opaque: false,
+                barrierColor: Colors.black54,
+                transitionDuration: const Duration(milliseconds: 300),
+                pageBuilder: (_, __, ___) {
+                  return OcrDetailModal(
+                    tag: heroTag,
+                    result: result,
+                    onTextUpdated: onTextUpdated,
+                  );
+                },
               ),
             );
           },

@@ -511,27 +511,45 @@ class _OcrState extends State<Ocr> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(left: 16, bottom: 16),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.grey,
-                        width: 2,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Colors.grey,
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: OcrResultGrid(
+                            ocrResults: ocrResults,
+                            onTextUpdated: (filename, newText) {
+                              setState(() {
+                                final index = ocrResults
+                                    .indexWhere((res) => res.filename == filename);
+                                if (index != -1) {
+                                  ocrResults[index] =
+                                      OcrResult(filename: filename, text: newText);
+                                }
+                              });
+                            },
+                          ),
+                        ),
                       ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: OcrResultGrid(
-                      ocrResults: ocrResults,
-                      onTextUpdated: (filename, newText) {
-                        setState(() {
-                          final index = ocrResults
-                              .indexWhere((res) => res.filename == filename);
-                          if (index != -1) {
-                            ocrResults[index] =
-                                OcrResult(filename: filename, text: newText);
-                          }
-                        });
-                      },
-                    ),
+                      const SizedBox(
+                        height: 15,
+                      ),
+                      TextField(
+                        controller: _otpTextController,
+                        readOnly: true,
+                        maxLines: 5,
+                        decoration: InputDecoration(
+                          labelText: "Response",
+                          border: const OutlineInputBorder(),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
