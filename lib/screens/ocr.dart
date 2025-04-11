@@ -54,8 +54,14 @@ class _OcrState extends State<Ocr> {
     });
   }
 
+  String formatOcrText(Map<String, dynamic> textMap) {
+    return textMap.entries
+        .map((entry) => "[${entry.key}]\n${entry.value}")
+        .join('\n\n');
+  }
+
   Future<void> sendPostReq() async {
-    final String url = "http://127.0.0.1:$port/ocr/hand";
+    final String url = "http://127.0.0.1:$port/ocr";
 
     var request = http.MultipartRequest('POST', Uri.parse(url));
 
@@ -65,9 +71,17 @@ class _OcrState extends State<Ocr> {
       );
     }
 
-    request.fields['pageType'] = selectedPageType.toString();
-    request.fields['ocrMode'] = selectedOcrMode.toString();
-    request.fields['segmentationMode'] = selectedSegmentationMode.toString();
+    final List<String> easyOcrCodes = selectedLanguages
+        .map((label) => SupportedLanguageExtension.fromLabel(label)?.code)
+        .where((code) => code != null)
+        .cast<String>()
+        .toList();
+
+    request.fields['pageType'] = selectedPageType.toString().split('.').last;
+    request.fields['ocrMode'] = selectedOcrMode.toString().split('.').last;
+    request.fields['segmentMode'] =
+        selectedSegmentationMode.toString().split('.').last;
+    request.fields['languages'] = jsonEncode(easyOcrCodes);
     request.fields['kHeight'] = _kHeightController.text;
     request.fields['kWidth'] = _kWidthController.text;
     request.fields['overlapUp'] = _overlapUpperController.text;
@@ -96,9 +110,14 @@ class _OcrState extends State<Ocr> {
 
       if (res.statusCode == 200) {
         Map<String, dynamic> body = jsonDecode(resBody);
-        response = body['text'];
+        response = formatOcrText(body); // your formatting logic
       } else {
-        response = "Failed to upload: ${res.statusCode}";
+        try {
+          final errorJson = jsonDecode(resBody);
+          response = "Error: ${errorJson['message'] ?? 'Unknown error'}";
+        } catch (_) {
+          response = "Failed to upload: ${res.statusCode}";
+        }
       }
     } on TimeoutException catch (_) {
       isLoading = false;
@@ -108,6 +127,7 @@ class _OcrState extends State<Ocr> {
     } finally {
       _otpTextController.text = response;
     }
+
 
     setState(() {
       isLoading = false;
@@ -496,7 +516,6 @@ class _OcrState extends State<Ocr> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(
                           Radius.circular(12),
-
                         ),
                       ),
                     ),

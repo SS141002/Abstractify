@@ -17,26 +17,61 @@ enum SupportedLanguage {
 }
 
 extension SupportedLanguageExtension on SupportedLanguage {
+  /// Human-friendly label (for UI)
   String get label {
     switch (this) {
       case SupportedLanguage.english:
-        return 'English';
+        return "English";
       case SupportedLanguage.hindi:
-        return 'Hindi';
+        return "Hindi";
       case SupportedLanguage.french:
-        return 'French';
+        return "French";
       case SupportedLanguage.spanish:
-        return 'Spanish';
+        return "Spanish";
       case SupportedLanguage.german:
-        return 'German';
+        return "German";
       case SupportedLanguage.japanese:
-        return 'Japanese';
+        return "Japanese";
       case SupportedLanguage.chinese:
-        return 'Chinese';
+        return "Chinese";
       case SupportedLanguage.arabic:
-        return 'Arabic';
+        return "Arabic";
       case SupportedLanguage.russian:
-        return 'Russian';
+        return "Russian";
+    }
+  }
+
+  /// EasyOCR-compatible language code
+  String get code {
+    switch (this) {
+      case SupportedLanguage.english:
+        return "en";
+      case SupportedLanguage.hindi:
+        return "hi";
+      case SupportedLanguage.french:
+        return "fr";
+      case SupportedLanguage.spanish:
+        return "es";
+      case SupportedLanguage.german:
+        return "de";
+      case SupportedLanguage.japanese:
+        return "ja";
+      case SupportedLanguage.chinese:
+        return "ch_sim"; // OR "ch_tra" for Traditional Chinese
+      case SupportedLanguage.arabic:
+        return "ar";
+      case SupportedLanguage.russian:
+        return "ru";
+    }
+  }
+
+  static SupportedLanguage? fromLabel(String label) {
+    try {
+      return SupportedLanguage.values.firstWhere(
+        (lang) => lang.label == label,
+      );
+    } catch (e) {
+      return null;
     }
   }
 }

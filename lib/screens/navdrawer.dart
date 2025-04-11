@@ -78,7 +78,7 @@ class NavDrawer extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            "v1.0.0",
+            "v0.1.6.8",
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
