@@ -9,6 +9,8 @@ import 'package:abstractify/widgets/ocr_dropzone_widget.dart';
 import 'package:abstractify/models/ocr_data.dart';
 import 'package:abstractify/widgets/ocr_mode_section.dart';
 import 'package:abstractify/widgets/language_dropdown.dart';
+import 'package:abstractify/models/ocr_result_model.dart';
+import 'package:abstractify/widgets/ocr_result_grid.dart';
 
 class Ocr extends StatefulWidget {
   const Ocr({super.key});
@@ -48,16 +50,12 @@ class _OcrState extends State<Ocr> {
   OcrMode selectedOcrMode = OcrMode.handwritten;
   SegmentationMode selectedSegmentationMode = SegmentationMode.automatic;
 
+  List<OcrResult> ocrResults = [];
+
   void updateFiles(List<String> newFiles) {
     setState(() {
       selectedFiles = newFiles.toSet();
     });
-  }
-
-  String formatOcrText(Map<String, dynamic> textMap) {
-    return textMap.entries
-        .map((entry) => "[${entry.key}]\n${entry.value}")
-        .join('\n\n');
   }
 
   Future<void> sendPostReq() async {
@@ -110,7 +108,16 @@ class _OcrState extends State<Ocr> {
 
       if (res.statusCode == 200) {
         Map<String, dynamic> body = jsonDecode(resBody);
-        response = formatOcrText(body); // your formatting logic
+
+        setState(() {
+          ocrResults = body.entries
+              .map((e) => OcrResult(filename: e.key, text: e.value.toString()))
+              .toList();
+
+          response = ocrResults
+              .map((e) => "[${e.filename}]\n${e.text}")
+              .join("\n\n"); // still populate response string
+        });
       } else {
         try {
           final errorJson = jsonDecode(resBody);
@@ -126,12 +133,10 @@ class _OcrState extends State<Ocr> {
       response = 'Error $e';
     } finally {
       _otpTextController.text = response;
+      setState(() {
+        isLoading = false;
+      });
     }
-
-
-    setState(() {
-      isLoading = false;
-    });
   }
 
   void _submitForm() {
@@ -505,19 +510,27 @@ class _OcrState extends State<Ocr> {
               ),
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(16, 0, 0, 16),
-                  child: TextField(
-                    controller: _otpTextController,
-                    expands: true,
-                    readOnly: true,
-                    minLines: null,
-                    maxLines: null,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(12),
-                        ),
+                  padding: const EdgeInsets.only(left: 16, bottom: 16),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.grey,
+                        width: 2,
                       ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: OcrResultGrid(
+                      ocrResults: ocrResults,
+                      onTextUpdated: (filename, newText) {
+                        setState(() {
+                          final index = ocrResults
+                              .indexWhere((res) => res.filename == filename);
+                          if (index != -1) {
+                            ocrResults[index] =
+                                OcrResult(filename: filename, text: newText);
+                          }
+                        });
+                      },
                     ),
                   ),
                 ),
