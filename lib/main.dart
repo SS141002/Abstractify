@@ -9,9 +9,9 @@ void main() async {
   await windowManager.ensureInitialized();
 
   if (Platform.isWindows) {
-    await windowManager.setMinimumSize(const Size(1200, 800));
-    await windowManager.setSize(Size(1200, 800));  // Set initial size
-    await windowManager.setAspectRatio(3 / 2);
+    await windowManager.setMinimumSize(const Size(1200, 830));
+    await windowManager.setSize(Size(1200, 830));  // Set initial size
+    await windowManager.setAspectRatio(1200 / 830);
   }
 
   runApp(

@@ -3,37 +3,36 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:abstractify/models/ocr_result_model.dart';
 import 'package:abstractify/widgets/imagepreview.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:abstractify/providers/ocr_result_provider.dart';
 
-class DropZoneWidget extends StatefulWidget {
-  final Function(List<String>) onFilesChanged;
+class DropZoneWidget extends ConsumerStatefulWidget {
   final List<String> supportedExtensions;
 
   const DropZoneWidget({
     super.key,
-    required this.onFilesChanged,
     this.supportedExtensions = const ['.jpg', '.jpeg', '.png', '.webp'],
   });
 
   @override
-  DropZoneWidgetState createState() => DropZoneWidgetState();
+  ConsumerState<DropZoneWidget> createState() => _DropZoneWidgetState();
 }
 
-class DropZoneWidgetState extends State<DropZoneWidget> {
+class _DropZoneWidgetState extends ConsumerState<DropZoneWidget> {
   bool _isHighlighted = false;
-  final Set<String> _selectedFiles = {};
   bool _isProcessing = false;
 
   Future<void> _handleFiles(List<String> paths) async {
     try {
       setState(() => _isProcessing = true);
-
       final validFiles = await _filterValidFiles(paths);
       if (validFiles.isEmpty) return;
 
-      setState(() => _selectedFiles.addAll(validFiles));
-      widget.onFilesChanged(_selectedFiles.toList());
+      final notifier = ref.read(ocrResultsProvider.notifier);
+      notifier.addAll(validFiles.map((path) => OcrResult(path: path)).toList());
     } finally {
       setState(() => _isProcessing = false);
     }
@@ -50,7 +49,7 @@ class DropZoneWidgetState extends State<DropZoneWidget> {
         if (await file.exists() &&
             stat.type == FileSystemEntityType.file &&
             widget.supportedExtensions.any((ext) =>
-            p.extension(path).toLowerCase() == ext.toLowerCase())) {
+                p.extension(path).toLowerCase() == ext.toLowerCase())) {
           validFiles.add(path);
         }
       } catch (_) {}
@@ -82,10 +81,10 @@ class DropZoneWidgetState extends State<DropZoneWidget> {
     final validFiles = <String>[];
 
     stream.listen(
-          (entity) {
+      (entity) {
         if (entity is File &&
             widget.supportedExtensions.any((ext) =>
-            p.extension(entity.path).toLowerCase() == ext.toLowerCase())) {
+                p.extension(entity.path).toLowerCase() == ext.toLowerCase())) {
           validFiles.add(entity.path);
         }
       },
@@ -100,12 +99,13 @@ class DropZoneWidgetState extends State<DropZoneWidget> {
   }
 
   void _clearSelection() {
-    setState(() => _selectedFiles.clear());
-    widget.onFilesChanged([]);
+    ref.read(ocrResultsProvider.notifier).clear();
   }
 
   @override
   Widget build(BuildContext context) {
+    final ocrResults = ref.watch(ocrResultsProvider);
+
     return SizedBox(
       height: 160,
       child: DropTarget(
@@ -128,30 +128,32 @@ class DropZoneWidgetState extends State<DropZoneWidget> {
                   ? Colors.blue.withValues(alpha: 50)
                   : Colors.transparent,
             ),
-            child: _buildContent(),
+            child: _buildContent(ocrResults),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(Map<String, OcrResult> ocrResults) {
     return GestureDetector(
       onTap: _selectFiles,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            Expanded(child: _buildMainContent()),
+            Expanded(
+              child: _buildMainContent(ocrResults),
+            ),
             const SizedBox(width: 12),
-            _buildActionButtons(),
+            _buildActionButtons(ocrResults),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMainContent() {
+  Widget _buildMainContent(Map<String, OcrResult> ocrResults) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -164,22 +166,22 @@ class DropZoneWidgetState extends State<DropZoneWidget> {
             color: _isHighlighted ? Colors.blue : Colors.grey,
           ),
         const SizedBox(height: 8),
-        _selectedFiles.isEmpty
+        ocrResults.isEmpty
             ? Text(
-          _isProcessing ? "Processing files..." : "Drop images or click",
-          style: Theme.of(context).textTheme.bodyMedium,
-        )
+                _isProcessing ? "Processing files..." : "Drop images or click",
+                style: Theme.of(context).textTheme.bodyMedium,
+              )
             : Text(
-          "${_selectedFiles.length} files selected",
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+                "${ocrResults.length} files selected",
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
       ],
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(Map<String, OcrResult> ocrResults) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -191,19 +193,17 @@ class DropZoneWidgetState extends State<DropZoneWidget> {
         _buildIconButton(
           icon: Icons.image,
           tooltip: "Preview images",
-          onPressed: _selectedFiles.isNotEmpty
+          onPressed: ocrResults.isNotEmpty
               ? () => showDialog(
-            context: context,
-            builder: (_) => ImagePreviewModal(
-              imagePaths: _selectedFiles.toList(),
-            ),
-          )
+                    context: context,
+                    builder: (_) => ImagePreviewModal(),
+                  )
               : null,
         ),
         _buildIconButton(
           icon: Icons.clear,
           tooltip: "Clear selection",
-          onPressed: _selectedFiles.isNotEmpty ? _clearSelection : null,
+          onPressed: ocrResults.isNotEmpty ? _clearSelection : null,
         ),
       ],
     );

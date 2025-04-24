@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:abstractify/models/ocr_result_model.dart'; // adjust path if needed
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:abstractify/models/ocr_result_model.dart';
+import 'package:abstractify/providers/ocr_result_provider.dart';
 
-class OcrDetailModal extends StatefulWidget {
+class OcrDetailModal extends ConsumerStatefulWidget {
   final String tag;
   final OcrResult result;
-  final ValueChanged<String> onTextUpdated;
 
   const OcrDetailModal({
     super.key,
     required this.tag,
     required this.result,
-    required this.onTextUpdated,
   });
 
   @override
-  State<OcrDetailModal> createState() => _OcrDetailModalState();
+  ConsumerState<OcrDetailModal> createState() => _OcrDetailModalState();
 }
 
-class _OcrDetailModalState extends State<OcrDetailModal> {
+class _OcrDetailModalState extends ConsumerState<OcrDetailModal> {
   late TextEditingController _controller;
   bool isEditing = false;
 
@@ -37,8 +37,11 @@ class _OcrDetailModalState extends State<OcrDetailModal> {
   void _toggleEditMode() {
     setState(() {
       if (isEditing) {
-        // Call update callback when editing ends
-        widget.onTextUpdated(_controller.text);
+        // Update provider when editing is done
+        ref.read(ocrResultsProvider.notifier).updateText(
+              widget.result.uuid,
+              _controller.text,
+            );
       }
       isEditing = !isEditing;
     });
@@ -89,8 +92,8 @@ class _OcrDetailModalState extends State<OcrDetailModal> {
                                 isDense: true,
                                 filled: true,
                                 fillColor: isEditing
-                                    ? theme.colorScheme.surfaceVariant
-                                        .withOpacity(0.3)
+                                    ? theme.colorScheme.surfaceContainerHighest
+                                        .withValues(alpha: 0.3)
                                     : Colors.transparent,
                               ),
                               style: theme.textTheme.bodyMedium,
@@ -106,7 +109,8 @@ class _OcrDetailModalState extends State<OcrDetailModal> {
                               icon: const Icon(Icons.copy),
                               onPressed: () {
                                 Clipboard.setData(
-                                    ClipboardData(text: _controller.text));
+                                  ClipboardData(text: _controller.text),
+                                );
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                       content: Text('Copied to clipboard!')),

@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:abstractify/providers/ocr_result_provider.dart'; // Import your provider
 import 'package:abstractify/widgets/ocr_result_card.dart';
-import 'package:abstractify/models/ocr_result_model.dart';
 
-class OcrResultGrid extends StatelessWidget {
-  final List<OcrResult> ocrResults;
-  final void Function(String filename, String newText) onTextUpdated;
-
-  const OcrResultGrid({
-    super.key,
-    required this.ocrResults,
-    required this.onTextUpdated,
-  });
+class OcrResultGrid extends ConsumerWidget {
+  const OcrResultGrid({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    if (ocrResults.isEmpty) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final results = ref.watch(ocrResultsProvider).values.toList();
+
+    if (results.isEmpty) {
       return const Center(
         child: Text("No OCR results to show 🫠"),
       );
@@ -22,7 +18,7 @@ class OcrResultGrid extends StatelessWidget {
 
     return GridView.builder(
       padding: const EdgeInsets.all(12),
-      itemCount: ocrResults.length,
+      itemCount: results.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: 12,
@@ -30,11 +26,8 @@ class OcrResultGrid extends StatelessWidget {
         childAspectRatio: 1.1,
       ),
       itemBuilder: (context, index) {
-        final result = ocrResults[index];
-        return OcrResultCard(
-          result: result,
-          onTextUpdated: (newText) => onTextUpdated(result.filename, newText),
-        );
+        final result = results[index];
+        return OcrResultCard(result: result);
       },
     );
   }

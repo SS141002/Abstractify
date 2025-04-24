@@ -5,19 +5,17 @@ import 'package:abstractify/models/ocr_result_model.dart'; // Adjust the path if
 
 class OcrResultCard extends StatelessWidget {
   final OcrResult result;
-  final ValueChanged<String> onTextUpdated;
 
   const OcrResultCard({
     super.key,
     required this.result,
-    required this.onTextUpdated,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final heroTag = 'ocrCard_${result.filename}';
+    final heroTag = 'ocrCard_${result.path}';
 
     return Hero(
       tag: heroTag,
@@ -35,7 +33,6 @@ class OcrResultCard extends StatelessWidget {
                   return OcrDetailModal(
                     tag: heroTag,
                     result: result,
-                    onTextUpdated: onTextUpdated,
                   );
                 },
               ),
