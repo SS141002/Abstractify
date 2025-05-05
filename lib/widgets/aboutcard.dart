@@ -63,14 +63,18 @@ class _AboutUsCardState extends State<AboutUsCard> {
               borderRadius: BorderRadius.circular(16),
               side: BorderSide(
                 color: _isHovered
-                    ? colorScheme.primary.withOpacity(0.2)
+                    ? colorScheme.primary.withValues(alpha: 0.2)
                     : Colors.transparent,
                 width: 1.5,
               ),
             ),
-            elevation: _isPressed ? 8 : _isHovered ? 6 : 4,
+            elevation: _isPressed
+                ? 8
+                : _isHovered
+                    ? 6
+                    : 4,
             color: _isPressed
-                ? colorScheme.surfaceVariant
+                ? colorScheme.surfaceContainerHighest
                 : colorScheme.surface,
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -82,12 +86,16 @@ class _AboutUsCardState extends State<AboutUsCard> {
                     transform: Matrix4.identity()
                       ..translate(
                         0.0,
-                        _isPressed ? 4.0 : _isHovered ? -2.0 : 0.0,
+                        _isPressed
+                            ? 4.0
+                            : _isHovered
+                                ? -2.0
+                                : 0.0,
                       ),
                     child: CircleAvatar(
                       radius: 100,
                       backgroundImage: AssetImage(widget.avatarImage),
-                      backgroundColor: colorScheme.surfaceVariant,
+                      backgroundColor: colorScheme.surfaceContainerHighest,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -108,7 +116,7 @@ class _AboutUsCardState extends State<AboutUsCard> {
                     ),
                     tooltip: 'View LinkedIn profile',
                     onPressed: _launchProfile,
-                    hoverColor: colorScheme.primary.withOpacity(0.1),
+                    hoverColor: colorScheme.primary.withValues(alpha: 0.1),
                   ),
                 ],
               ),

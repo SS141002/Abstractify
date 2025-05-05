@@ -1,10 +1,10 @@
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class SocketService {
-  late IO.Socket _socket;
+  late io.Socket _socket;
 
   void connect({required Function(Map data) onProgress}) {
-    _socket = IO.io('http://localhost:5000', {
+    _socket = io.io('http://localhost:5000', {
       'transports': ['websocket'],
       'autoConnect': false,
     });

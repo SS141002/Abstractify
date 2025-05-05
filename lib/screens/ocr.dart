@@ -102,7 +102,7 @@ class _OcrState extends ConsumerState<Ocr> {
 
       // Send request with timeout
       final res = await request.send().timeout(
-            const Duration(seconds: 120),
+            const Duration(seconds: 240),
             onTimeout: () =>
                 throw TimeoutException("Request timed out after 2 minutes"),
           );
@@ -413,10 +413,12 @@ class _OcrState extends ConsumerState<Ocr> {
                                             },
                                             validator: (value) {
                                               if (value == null ||
-                                                  value.isEmpty)
+                                                  value.isEmpty) {
                                                 return "Please enter overlap";
-                                              if (int.tryParse(value) == null)
+                                              }
+                                              if (int.tryParse(value) == null) {
                                                 return "Please enter valid number";
+                                              }
                                               return null;
                                             },
                                           ),

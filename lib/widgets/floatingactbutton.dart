@@ -88,9 +88,9 @@ class _FloatingActButtonState extends State<FloatingActButton>
               heroTag: null,
               onPressed: widget.onPressed,
               backgroundColor: _isPressed
-                  ? widget.hoverColor?.withOpacity(0.9) ??
-                  widget.backgroundColor ??
-                  colorScheme.primaryContainer
+                  ? widget.hoverColor?.withValues(alpha: 0.9) ??
+                      widget.backgroundColor ??
+                      colorScheme.primaryContainer
                   : widget.backgroundColor ?? colorScheme.primary,
               foregroundColor: widget.foregroundColor ?? colorScheme.onPrimary,
               elevation: _isHovered ? widget.elevation * 2 : widget.elevation,
@@ -103,12 +103,12 @@ class _FloatingActButtonState extends State<FloatingActButton>
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               icon: widget.icon != null
                   ? IconTheme(
-                data: IconThemeData(
-                  color: widget.foregroundColor ?? colorScheme.onPrimary,
-                  size: 24,
-                ),
-                child: widget.icon!,
-              )
+                      data: IconThemeData(
+                        color: widget.foregroundColor ?? colorScheme.onPrimary,
+                        size: 24,
+                      ),
+                      child: widget.icon!,
+                    )
                   : null,
               label: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
