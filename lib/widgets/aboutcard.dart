@@ -112,7 +112,6 @@ class _AboutUsCardState extends State<AboutUsCard> {
                     icon: Image.asset(
                       widget.iconImage,
                       height: 32,
-                      color: colorScheme.primary,
                     ),
                     tooltip: 'View LinkedIn profile',
                     onPressed: _launchProfile,
