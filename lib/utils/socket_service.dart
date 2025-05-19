@@ -1,3 +1,4 @@
+
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class SocketService {
@@ -6,7 +7,7 @@ class SocketService {
   void connect({required Function(Map data) onProgress}) {
     _socket = io.io('http://localhost:5000', {
       'transports': ['websocket'],
-      'autoConnect': false,
+      'autoConnect': true,
     });
 
     _socket.connect();

@@ -210,7 +210,12 @@ class _OcrState extends ConsumerState<Ocr> {
           "OCR",
         ),
         actions: [
-          BackButton(),
+          BackButton(
+            onPressed: () {
+              socketService.disconnect();
+              Navigator.of(context).pop();
+            },
+          ),
         ],
       ),
       drawer: NavDrawer(),
@@ -364,9 +369,13 @@ class _OcrState extends ConsumerState<Ocr> {
                                       children: [
                                         Text(
                                           'Brightness Range:',
-                                          style: Theme.of(context).textTheme.bodyMedium,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium,
                                         ),
-                                        const SizedBox(width: 12,),
+                                        const SizedBox(
+                                          width: 12,
+                                        ),
                                         Expanded(
                                           child: RangeSlider(
                                             values: _range,
@@ -536,6 +545,7 @@ class _OcrState extends ConsumerState<Ocr> {
                             const SizedBox(
                               height: 15,
                             ),
+                            /*
                             TextField(
                               controller: _otpTextController,
                               readOnly: true,
@@ -544,7 +554,7 @@ class _OcrState extends ConsumerState<Ocr> {
                                 labelText: "Response",
                                 border: const OutlineInputBorder(),
                               ),
-                            ),
+                            ),*/
                           ],
                         ),
                       ),
